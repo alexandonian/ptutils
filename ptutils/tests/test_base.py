@@ -4,6 +4,7 @@ import os
 import logging
 import unittest
 
+from ptutils import constants
 from ptutils.base import Module, Configuration
 
 
@@ -57,10 +58,15 @@ class TestModule(unittest.TestCase):
         pass
 
     def test_init(self):
-        self.logger.info('try again...')
         self.assertIsInstance(Module(), Module)
         for key, value in self.test_types.items():
             self.assertIsInstance(Module(value), Module)
+
+    def test_class_base(self):
+        self.assertEqual(Module.__base__, )
+
+    def test_name(self):
+        pass
 
 
 class TestConfiguration(TestModule):
@@ -82,6 +88,7 @@ class TestConfiguration(TestModule):
 
 if __name__ == '__main__':
     unittest.main()
+
     # def test_return_true(self):
     #     a = A()
     #     assert_equal(a.return_true(), True)
@@ -95,5 +102,3 @@ if __name__ == '__main__':
     # def test_raise_exc_with_decorator(self):
     #     a = A()
     #     a.raise_exc("A message")
-
-

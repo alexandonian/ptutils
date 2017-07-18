@@ -58,7 +58,7 @@ from collections import OrderedDict
 import torch.nn as nn
 from torch.autograd import Variable
 
-from utils import parse_config, sonify
+from utils.utils import parse_config, sonify
 
 
 class Module(object):
@@ -290,7 +290,6 @@ class Module(object):
                 except Exception:
                     state[name] = module.state_dict()
         return state
-
 
     def load_state(self, state):
         """Copy properties from state into this module and its descendants.

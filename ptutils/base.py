@@ -45,9 +45,6 @@ as the network itself is.
 
 
 """
-import sys
-from utils import load_file
-
 import module
 
 
@@ -78,16 +75,13 @@ class Configuration(Module):
 
     def __init__(self, config=None):
         super(Configuration, self).__init__()
-        # print('Calling __init__')
         self.config = config
 
     @classmethod
     def configure(self, config):
-        print('Calling configure')
         print(config)
 
     def __call__(self, config=None):
-        print('Calling __call__')
         if config is not None:
             return self.configure(config)
         else:
@@ -105,16 +99,16 @@ class Status(Module):
 
 class Session(Module):
 
-    # @abstractmethod
+    @classmethod
     def run(self):
         pass
 
-    __call__ = run
+    def __call__(self):
+        return self.run()
 
 
 class Model(Module):
 
-    # @abstractmethod
     def forward(self):
         pass
 
@@ -123,7 +117,6 @@ class Model(Module):
 
 class Optimizer(Module):
 
-    # @abstractmethod
     def step(self):
         pass
 
@@ -150,6 +143,27 @@ class DataProvider(Module):
         pass
 
     __call__ = provide
+
+
+class Trainer(Module):
+    pass
+
+
+class Tester(Module):
+    pass
+
+
+class Runner(Module):
+    pass
+
+
+class Saver(Module):
+    pass
+
+
+class Loader(Module):
+    pass
+
 
 # Module._BASE_MODULES = BASE_MODULES
 # Module._CORE_MODULES = CORE_MODULES
