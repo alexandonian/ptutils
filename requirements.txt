@@ -1,0 +1,7 @@
+nose
+numpy
+torch
+pymongo
+GitPython
+setuptools
+torchvision

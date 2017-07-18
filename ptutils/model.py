@@ -1,14 +1,14 @@
 import random
-from collections import OrderedDict
+from collections import defaultdict
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from .base import Module, Property
+import base
 
-
-class Model(nn.Module, Module):
+class Model(nn.Module, base.Model):
+    __name__ = 'model'
     """Wrap nn.Module to change the model.state_dict() separator symbol."""
 
     # Model class will be responsible for parsing state_dicts and loading partial
@@ -16,14 +16,16 @@ class Model(nn.Module, Module):
 
     def __init__(self, *args, **kwargs):
         nn.Module.__init__(self)
-        Module.__init__(self, *args, **kwargs)
+        base.Model.__init__(self, *args, **kwargs)
 
 
-class Criterion(Module):
+class Criterion(base.Criterion):
+    __name__ = 'criterion'
+
     def __init__(self, criterion):
         super(Criterion, self).__init__()
-        self.criterion = criterion
-        self.__name__ = criterion.__class__.__name__
+        self.criterion = criterion()
+        self.__name__ = criterion.__name__
 
     def __call__(self, *args, **kwargs):
         return self.criterion(*args, **kwargs)
@@ -32,16 +34,25 @@ class Criterion(Module):
         return self.__name__
 
 
-class Optimizer(optim.Optimizer, Module):
-    def __init__(self, optimizer):
-        Module.__init__(self)
-        self = optimizer
+class Optimizer(optim.Optimizer, base.Optimizer):
+    __name__ = 'optimizer'
 
-    def __repr__(self):
-        return optim.Optimizer.__repr__(self)
+    def __init__(self, optimizer):
+        base.Optimizer.__init__(self)
+        self.state = defaultdict(dict)
+        self.param_groups = []
+        self.optimizer_cls = optimizer
+
+    def step(self, closure=None):
+        return self.optimizer(closure=closure)
+
+    def zero_grads(self):
+        return self.optimizer.zero_grads()
 
 
 class CNN(Model):
+    __name__ = 'cnn'
+
     def __init__(self,):
         super(CNN, self).__init__()
         self.layer1 = nn.Sequential(
@@ -56,7 +67,7 @@ class CNN(Model):
             nn.MaxPool2d(2))
         self.fc = nn.Linear(7 * 7 * 32, 10)
 
-        self.learning_rate = Property(0.001)
+        self.learning_rate = 0.001
 
     def forward(self, x):
         out = self.layer1(x)
@@ -82,7 +93,6 @@ class DynamicNet(Model):
 
 
 class AlexNet(Model):
-
     __name__ = 'alexnet'
     _DEFAULTS = {
         'num_classes': 10,
