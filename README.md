@@ -3,6 +3,8 @@ PyTorch utilities for neural network research.
 
 **Current status: pre-alpha. The API is still TDB and likely to change.**
 
+[![Build Status](https://travis-ci.org/alexandonian/ptutils.svg?branch=master)](https://travis-ci.org/alexandonian/ptutils)
+
 ## Overview
 PTUtils is a utility package built for coordinating neural network experiments
 PTUtils is a PyTorch utility package designed for coordinating neural network experiments with dynamics and modularity in mind. Inspired by its Tensorflow sibling, [tfutils](https://github.com/neuroailab/tfutils), PTUtils provides functionality for constructing, runing and monitoring dynamic neural network models, retrieving data from multiple data sources 'on the fly', and interfacing with common databases.
