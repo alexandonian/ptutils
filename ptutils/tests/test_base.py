@@ -59,7 +59,6 @@ class TestModule(unittest.TestCase):
 
     def test_init(self):
         base = Module()
-        assert
         for key, value in self.test_types.items():
             mod = Module(value)
 
