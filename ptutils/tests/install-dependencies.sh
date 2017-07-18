@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 sudo apt-get update
 # We do this conditionally because it saves us some downloading if the
 # version is the same.

@@ -1,12 +1,8 @@
 from __future__ import print_function
 
 import os
+import logging
 import unittest
-from pprint import pprint as print
-from nose.tools import assert_equal
-from nose.tools import assert_not_equal
-from nose.tools import assert_raises
-from nose.tools import raises
 
 from ptutils.base import Module, Configuration
 
@@ -47,30 +43,34 @@ class TestModule(unittest.TestCase):
         'test_method': type(str(), tuple(), {'method': lambda self: self}).method,
     }
 
-    @classmethod
-    def setup_class(cls):
-        """Setup_class is called once for each class before any tests are run."""
-        pass
+    logging.basicConfig()
+    logger = logging.getLogger(__name__)
+    logger.setLevel('DEBUG')
 
     @classmethod
-    def teardown_class(cls):
-        """Teardown_class is called once for each class before any tests are run."""
+    def setUpClass(cls):
+        """setUpClass is called once for each class before any tests are run."""
+
+    @classmethod
+    def tearDownClass(cls):
+        """tearDownClass is called once for each class before any tests are run."""
         pass
 
     def test_init(self):
-        base = Module()
+        self.logger.info('try again...')
+        self.assertIsInstance(Module(), Module)
         for key, value in self.test_types.items():
-            mod = Module(value)
+            self.assertIsInstance(Module(value), Module)
 
 
 class TestConfiguration(TestModule):
 
-    def setup(self):
-        """Setup is called before _each_ test method is executed."""
+    def setUp(self):
+        """setUp is called before _each_ test method is executed."""
         pass
 
-    def teardown(self):
-        """Teardown is called after _each_ test method is executed."""
+    def tearDown(self):
+        """tearDown is called after _each_ test method is executed."""
         pass
 
     def test_init(self):
@@ -79,6 +79,9 @@ class TestConfiguration(TestModule):
         assert(isinstance(base_c, Module))
         assert(isinstance(int_c, Module))
 
+
+if __name__ == '__main__':
+    unittest.main()
     # def test_return_true(self):
     #     a = A()
     #     assert_equal(a.return_true(), True)

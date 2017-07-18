@@ -1,9 +1,12 @@
 # PTUtils
+[![Development Status](https://img.shields.io/badge/development%20status-alpha-brightgreen.svg)](https://github.com/alexandonian/ptutils/blob/master)
+[![Build Status](https://travis-ci.org/alexandonian/ptutils.svg?branch=master)](https://travis-ci.org/alexandonian/ptutils)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/alexandonian/ptutils/blob/master/LICENSE.txt)
+[![Latest Stable Version](https://img.shields.io/badge/stable-N%2FA-yellow.svg)](https://github.com/alexandonian/ptutils/blob/master)
+[![Latest Unstable Version](https://img.shields.io/badge/unstable-dev-orange.svg)](https://github.com/alexandonian/ptutils/blob/master)
+
 PyTorch utilities for neural network research.
 
-**Current status: pre-alpha. The API is still TDB and likely to change.**
-
-[![Build Status](https://travis-ci.org/alexandonian/ptutils.svg?branch=master)](https://travis-ci.org/alexandonian/ptutils)
 
 ## Overview
 PTUtils is a utility package built for coordinating neural network experiments
