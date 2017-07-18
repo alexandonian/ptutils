@@ -76,7 +76,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['h5py', 'numpy', 'torch', 'pymongo', 'gitpython'],
+    install_requires=['numpy', 'torch', 'pymongo', 'gitpython'],
 
     # Use nosetests:
     test_suite='nose.collector',

@@ -1,5 +1,5 @@
-nose
-numpy
-pymongo
-GitPython
-setuptools
+nose==1.3.7
+setuptools==36.0.1
+numpy==1.12.1
+pymongo==3.4.0
+GitPython==2.1.5
