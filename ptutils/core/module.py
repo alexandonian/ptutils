@@ -58,7 +58,7 @@ from collections import OrderedDict
 import torch.nn as nn
 from torch.autograd import Variable
 
-from utils.utils import parse_config, sonify
+from ptutils.core.state import State
 
 
 class Module(object):
@@ -75,7 +75,7 @@ class Module(object):
         for i, arg in enumerate(args):
 
             if isinstance(arg, Module):
-                self.add_module(arg.__name__, arg)
+                self.register_module(arg.__name__, arg)
 
             if isinstance(arg, dict):
                 for key, value in arg.items():
@@ -133,7 +133,7 @@ class Module(object):
                 for name, p in module.named_properties(memo, submodule_prefix):
                     yield name, p
 
-    def add_module(self, name, module):
+    def register_module(self, name, module):
         """Add a child module to the current module.
 
         The module can be accessed as an attribute using the given name.
@@ -143,7 +143,9 @@ class Module(object):
             raise KeyError("attribute already exists '{}'".format(name))
         if not isinstance(module, Module) and module is not None:
             raise TypeError("{} is not a Module subclass".format(type(module)))
+        base = module.__base__.upper()
         self._modules[name] = module
+        object.__setattr__(self, '_' + base, module)
 
     def _add_nameless_module(self, module):
         """Add an unamed child module to the module using its class name.
@@ -154,7 +156,7 @@ class Module(object):
         cls_name = module.__class__.__name__
         warnings.warn('A nameless module was provided. ' +
                       ' Defaulting to its class name {}'.format(cls_name))
-        self.add_module(cls_name, module)
+        self.register_module(cls_name, module)
 
     def modules(self):
         """return an iterator over all modules in the module.
@@ -308,9 +310,6 @@ class Module(object):
             if name not in own_state:
                 raise KeyError('unexpected key "{}" in state'
                                .format(name))
-            if isinstance(prop, Property):
-                # backwards compatibility for serialized parameters
-                prop = prop
             own_state[name].copy_(prop)
 
         missing = set(own_state.keys()) - set(state.keys())
@@ -395,99 +394,6 @@ class Module(object):
 
 
 # class State(dict, Module):
-class State(dict):
-    """Base module for representing module state."""
-
-    __name__ = 'state'
-
-    def __init__(self, *args, **kwargs):
-        """Initialize State module."""
-        super(State, self).__init__(*args, **kwargs)
-        for arg in args:
-            if isinstance(arg, dict):
-                for k, v in arg.items():
-                    self[k] = v
-        if kwargs:
-            for k, v in kwargs.items():
-                self[k] = v
-
-    def state(self, *args, **kwargs):
-        """Return state."""
-        return self
-
-    def load_state(self, *args, **kwargs):
-        """Load state."""
-        return self
-
-    def __call__(self, *args, **kwargs):
-        """Return state."""
-        return self
-
-    def __getitem__(self, name):
-        """Return item `name`."""
-        return dict.__getitem__(self, name)
-
-    def __setitem__(self, name, value):
-        """Set item `name` to `value`."""
-        if isinstance(value, dict):
-            dict.__setitem__(self, name, State(value))
-        else:
-            dict.__setitem__(self, name, value)
-
-    def __delattr__(self, name):
-        """Delete attribute `name`."""
-        return dict.__delitem__(self, name)
-
-    def __getattr__(self, name):
-        """Return attribute `name`."""
-        return self.__getitem__(name)
-
-    def __setattr__(self, name, value):
-        """Set attribute `name` to `value`."""
-        self.__setitem__(name, value)
-
-    def __dir__(self):
-        """Return dir."""
-        return self.keys() + dir(dict(self))
-
-    def __deepcopy__(self, memo):
-        """Return deepcopy."""
-        return State(copy.deepcopy(dict(self)))
-
-
-class SonifiedState(State):
-    __name__ = 'sonified_state'
-
-    def __init__(self, *args, **kwargs):
-        super(SonifiedState, self).__init__()
-        for arg in args:
-            if isinstance(arg, dict):
-                for k, v in arg.items():
-                    self[k] = v
-        if kwargs:
-            for k, v in kwargs.items():
-                self[k] = v
-
-    def __setitem__(self, name, value):
-        if isinstance(name, type):
-            if isinstance(value, type):
-                dict.__setitem__(self, name.__name__,
-                                 (sonify(name), sonify(value)))
-                # dict.__setitem__(self, name.__name__, value.__name__)
-            elif isinstance(value, dict):
-                dict.__setitem__(self, name.__name__,
-                                 (sonify(name), SonifiedState(value)))
-                # dict.__setitem__(self, name.__name__, SonifiedState(value))
-            else:
-                dict.__setitem__(self, name.__name__,
-                                 (sonify(name), sonify(value)))
-                # dict.__setitem__(self, name.__name__, value)
-        elif isinstance(value, type):
-            dict.__setitem__(self, name, (sonify(name), sonify(value)))
-            # dict.__setitem__(self, name, value.__name__)
-        else:
-            dict.__setitem__(self, name, (sonify(name), sonify(value)))
-            # dict.__setitem__(self, name, value)
 
 
 class Configuration(Module):

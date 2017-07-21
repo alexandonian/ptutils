@@ -45,7 +45,7 @@ as the network itself is.
 
 
 """
-import module
+import ptutils.core.module as module
 
 
 class Module(module.Module):
@@ -56,10 +56,14 @@ class Module(module.Module):
     def __setattr__(self, name, value):
         super(Module, self).__setattr__(name, value)
         if isinstance(value, Module):
-            base = value.__base__
-            object.__setattr__(self, '_' + base.lower(), value)
+            pass
+            # self.add_module(name, value)
+            # base = value.__base__
+            # object.__setattr__(self, '_' + base.lower(), value)
 
 
+class State(module.State):
+    pass
 # BASE = load_file('base.yml', 'yml')
 # BASE_MODULES = {}
 # for name, cls_ in BASE['BASE_MODULES'].items():
@@ -78,7 +82,7 @@ class Configuration(Module):
         self.config = config
 
     @classmethod
-    def configure(self, config):
+    def configure(cls, config):
         print(config)
 
     def __call__(self, config=None):
@@ -90,11 +94,9 @@ class Configuration(Module):
 
 class Status(Module):
 
-    # @abstractmethod
-    def verify(self):
+    @classmethod
+    def verify(cls):
         pass
-
-    __call__ = verify
 
 
 class Session(Module):
@@ -112,8 +114,6 @@ class Model(Module):
     def forward(self):
         pass
 
-    __call__ = forward
-
 
 class Optimizer(Module):
 
@@ -127,68 +127,88 @@ class Criterion(Module):
     pass
 
 
-class DBInterface(Module):
+class Database(Module):
 
-    # @abstractmethod
-    def access(self):
+    @classmethod
+    def access(cls):
         pass
-
-    __call__ = access
 
 
 class DataProvider(Module):
 
-    # @abstractmethod
-    def provide(self):
+    @classmethod
+    def provide(cls):
         pass
-
-    __call__ = provide
 
 
 class Trainer(Module):
-    pass
+
+    @classmethod
+    def train(cls):
+        pass
 
 
 class Tester(Module):
-    pass
+
+    @classmethod
+    def test(cls):
+        pass
 
 
 class Runner(Module):
-    pass
+
+    @classmethod
+    def run(cls):
+        pass
 
 
 class Saver(Module):
-    pass
+
+    @classmethod
+    def save(cls):
+        pass
 
 
 class Loader(Module):
+
+    @classmethod
+    def load(cls):
+        pass
+
+
+class Serializer(Module):
     pass
 
 
-# Module._BASE_MODULES = BASE_MODULES
-# Module._CORE_MODULES = CORE_MODULES
-# Module._AUX_MODULES = AUX_MODULES
+class Encoder(Module):
+    pass
 
-if __name__ == '__main__':
-    config = {'config': 'this is a config'}
-    print('----------')
 
-    c = Configuration.configure(config)
-    print('Configuration.configure(config): {}'.format(c))
+class Decoder(Module):
+    pass
 
-    print('----------')
 
-    obj = Configuration(config)
-    print('obj: {}'.format(obj))
-    print('type(obj): {}'.format(type(obj)))
-    print('obj.config {}'.format(obj.config))
+class Handler(Module):
+    pass
 
-    print('----------')
 
-    without_config = obj()
-    print('obj(): {}'.format(without_config))
+class Registry(Module):
+    pass
 
-    print('----------')
 
-    with_config = obj(config)
-    print('obj(config): {}'.format(with_config))
+class Plugin(Module):
+    pass
+
+
+class Device(Module):
+    @classmethod
+    def manage(cls):
+        pass
+
+
+class Cache(Module):
+    pass
+
+
+class Profiler(Module):
+    pass

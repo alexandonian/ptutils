@@ -3,13 +3,16 @@ from __future__ import print_function
 import os
 import logging
 import unittest
+from collections import OrderedDict
 
+from ptutils import base
 from ptutils import constants
-from ptutils.base import Module, Configuration
+from ptutils.core import module, state
 
 
 class TestModule(unittest.TestCase):
 
+    _class = base.Module
     test_types = {
         # Numeric types
         'test_int': int(),
@@ -57,18 +60,64 @@ class TestModule(unittest.TestCase):
         """tearDownClass is called once for each class before any tests are run."""
         pass
 
+    def setUp(self):
+        """setUp is called before _each_ test method is executed."""
+        self.module = self._class()
+
+    def tearDown(self):
+        """tearDown is called after _each_ test method is executed."""
+        pass
+
     def test_init(self):
-        self.assertIsInstance(Module(), Module)
+        mod = base.Module()
+        self.assertTrue(hasattr(mod, '_state'))
+        self.assertTrue(hasattr(mod, '_modules'))
+        self.assertTrue(hasattr(mod, '_properties'))
+        self.assertIsInstance(mod._state, state.State)
+        self.assertIsInstance(mod._modules, OrderedDict)
+        self.assertIsInstance(mod._properties, OrderedDict)
+
         for key, value in self.test_types.items():
-            self.assertIsInstance(Module(value), Module)
+            self.assertIsInstance(base.Module(value), base.Module)
 
-    def test_class_base(self):
-        self.assertEqual(Module.__base__, )
+    def test_base_class_type(self):
+        self.assertEqual(base.Module.__base__, module.Module)
 
-    def test_name(self):
+    def test_base_class_name(self):
+        self.assertEqual(base.Module.__base__.__name__,
+                         constants.BASE['MODULE']['NAME'])
+
+    def test_class_name(self):
+        self.assertEqual(base.Module.__name__,
+                         constants.BASE['MODULE']['NAME'])
+
+    def test_register_module(self):
+        self.module.register_module('submodule', self._class())
+        self.assertEqual(self.module.submodule, self.module._MODULE)
+
+    def test_setattr_module(self):
+        pass
+
+    def test_setattr_property(self):
+        pass
+
+    def test_getattr_module(self):
+        pass
+
+    def test_getattr_property(self):
+        pass
+
+    def test_getitem_module(self):
+        pass
+
+    def test_getitem_property(self):
+        pass
+
+    def test_setitem_module(self):
         pass
 
 
+@unittest.skip('Skipping TestConfiguration')
 class TestConfiguration(TestModule):
 
     def setUp(self):
@@ -80,25 +129,19 @@ class TestConfiguration(TestModule):
         pass
 
     def test_init(self):
-        base_c = Configuration()
-        int_c = Configuration(self.test_types['test_int'])
-        assert(isinstance(base_c, Module))
-        assert(isinstance(int_c, Module))
+        super(TestConfiguration, self).test_init()
+        base_c = base.Configuration()
+        int_c = base.Configuration(self.test_types['test_int'])
+        assert(isinstance(base_c, base.Module))
+        assert(isinstance(int_c, base.Module))
+
+
+@unittest.skip('Skipping TestState')
+class TestState(TestModule):
+
+    def test_init(self):
+        state = base.State()
 
 
 if __name__ == '__main__':
     unittest.main()
-
-    # def test_return_true(self):
-    #     a = A()
-    #     assert_equal(a.return_true(), True)
-    #     assert_not_equal(a.return_true(), False)
-
-    # def test_raise_exc(self):
-    #     a = A()
-    #     assert_raises(KeyError, a.raise_exc, "A value")
-
-    # @raises(KeyError)
-    # def test_raise_exc_with_decorator(self):
-    #     a = A()
-    #     a.raise_exc("A message")
