@@ -367,13 +367,13 @@ class Module(object):
 
     def __repr__(self):
         """Return module string representation."""
-        tmpstr = self.__class__.__name__ + ' (\n'
+        repstr = self.__class__.__name__ + ' (\n'
         for key, module in self._modules.items():
             modstr = module.__repr__()
             modstr = _addindent(modstr, 2)
-            tmpstr = tmpstr + '  (' + str(key) + '): ' + modstr + '\n'
-        tmpstr = tmpstr + ')'
-        return tmpstr
+            repstr = repstr + '  (' + str(key) + '): ' + modstr + '\n'
+        repstr = repstr + ')'
+        return repstr
 
     def __dir__(self):
         """Return module dir()."""

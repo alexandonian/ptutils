@@ -7,6 +7,7 @@ import torch.optim as optim
 
 import base
 
+
 class Model(nn.Module, base.Model):
     __name__ = 'model'
     """Wrap nn.Module to change the model.state_dict() separator symbol."""
@@ -17,37 +18,6 @@ class Model(nn.Module, base.Model):
     def __init__(self, *args, **kwargs):
         nn.Module.__init__(self)
         base.Model.__init__(self, *args, **kwargs)
-
-
-class Criterion(base.Criterion):
-    __name__ = 'criterion'
-
-    def __init__(self, criterion):
-        super(Criterion, self).__init__()
-        self.criterion = criterion()
-        self.__name__ = criterion.__name__
-
-    def __call__(self, *args, **kwargs):
-        return self.criterion(*args, **kwargs)
-
-    def __repr__(self):
-        return self.__name__
-
-
-class Optimizer(optim.Optimizer, base.Optimizer):
-    __name__ = 'optimizer'
-
-    def __init__(self, optimizer):
-        base.Optimizer.__init__(self)
-        self.state = defaultdict(dict)
-        self.param_groups = []
-        self.optimizer_cls = optimizer
-
-    def step(self, closure=None):
-        return self.optimizer(closure=closure)
-
-    def zero_grads(self):
-        return self.optimizer.zero_grads()
 
 
 class CNN(Model):

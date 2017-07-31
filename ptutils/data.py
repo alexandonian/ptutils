@@ -9,6 +9,7 @@ from torch.utils.data import Dataset as dset
 
 from ptutils import base
 
+
 class DataProvider(base.DataProvider):
     """Interface for all DataProvider subclasses.
 
@@ -84,6 +85,7 @@ class DataReader(base.DataReader):
     - Exists completely independent of anything ptutils related.
         (Can use is just to read single data file, if desired.)
     """
+
     def __init__(self):
         super(DataReader, self).__init__()
 
@@ -135,19 +137,21 @@ class CIFARProvider(DataProvider):
         self.datasets = {'CIFAR10': {}, 'CIFAR100': {}}
         for mode in self.modes:
             self.datasets['CIFAR10'][mode] = dsets.CIFAR10(root='../tests/resources/data/',
-                                                           train=(mode == 'train'),
+                                                           train=(
+                                                               mode == 'train'),
                                                            transform=transforms.ToTensor(),
                                                            download=True)
             self.datasets['CIFAR100'][mode] = dsets.CIFAR100(root='../tests/resources/data/',
-                                                             train=(mode == 'train'),
+                                                             train=(
+                                                                 mode == 'train'),
                                                              transform=transforms.ToTensor(),
                                                              download=True)
 
     def provide(self, dataset='CIFAR10', mode='train', batch_size=100):
-            return DataLoader(dataset=self.datasets[dataset][mode],
-                              batch_size=batch_size,
-                              pin_memory=True,
-                              shuffle=(mode == 'train'))
+        return DataLoader(dataset=self.datasets[dataset][mode],
+                          batch_size=batch_size,
+                          pin_memory=True,
+                          shuffle=(mode == 'train'))
 
 
 class ImageNetProvider(DataProvider):
