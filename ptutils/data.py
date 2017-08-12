@@ -1,7 +1,7 @@
 from __future__ import division, print_function, absolute_import
 
 # import h5py
-from dataloader import DataLoader
+# from dataloader import DataLoader
 
 import torchvision.datasets as dsets
 import torchvision.transforms as transforms

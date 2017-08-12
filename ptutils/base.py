@@ -223,9 +223,9 @@ class Backend(Module):
 
 
 class Configuration(MetaModule):
-    _io = IO()
-    _parser = Parser()
-    _datahandler = DataHandler()
+    # _io = IO()
+    # _parser = Parser()
+    # _datahandler = DataHandler()
 
     def __init__(self, config=None):
         super(Configuration, self).__init__()
@@ -311,8 +311,8 @@ class Parser(Module):
 
 class Saver(Module):
 
-    _datasource = DataSource()
-    _serializer = Serializer()
+    # _datasource = DataSource()
+    # _serializer = Serializer()
 
     @classmethod
     def save(cls):
@@ -321,8 +321,8 @@ class Saver(Module):
 
 class Loader(Module):
 
-    _datasource = DataSource()
-    _serializer = Serializer()
+    # _datasource = DataSource()
+    # _serializer = Serializer()
 
     @classmethod
     def load(cls):
@@ -350,8 +350,8 @@ class IO(Module):
 
 
 class Serializer(Module):
-    _encoder = Encoder()
-    _decoder = Decoder()
+    # _encoder = Encoder()
+    # _decoder = Decoder()
     pass
 
 
@@ -360,17 +360,18 @@ class Formatter(Module):
 
 
 class Encoder(Module):
-    _backend = Backend()
+    # _backend = Backend()
     pass
 
 
 class Decoder(Module):
-    _backend = Backend()
+    # _backend = Backend()
     pass
 
 
 class Logger(Module):
-    _formatter = Formatter()
+    # _formatter = Formatter()
+    pass
 
 
 class Provider(Module):
@@ -381,18 +382,18 @@ class Provider(Module):
 
 
 class DataInterface(Module):
-    _formatter = Formatter()
-    _serializer = Serializer()
+    # _formatter = Formatter()
+    # _serializer = Serializer()
     pass
 
 
 class Session(Module):
-    _status = Status()
-    _specification = Specification()
-    _configuration = Configuration()
-    _dataprovider = DataProvider()
-    _database = Database()
-    _estimator = Estimator()
+    # _status = Status()
+    # _specification = Specification()
+    # _configuration = Configuration()
+    # _dataprovider = DataProvider()
+    # _database = Database()
+    # _estimator = Estimator()
     _step = Step()
 
     @classmethod
@@ -438,7 +439,7 @@ class DataProvider(Provider):
 
 
 class Dataset(Module):
-    _datastore = DataStore()
+    # _datastore = DataStore()
     pass
 
 
@@ -458,7 +459,8 @@ class Estimator(Module):
 
         if model is not None:
             if not isinstance(model, nn.Module):
-                raise ValueError('model argument must inherit from torch.nn.Module')
+                raise ValueError(
+                    'model argument must inherit from torch.nn.Module')
             self.model = model
 
         # Core
@@ -503,7 +505,8 @@ class Estimator(Module):
         self._save_to_directory = None
         # Nothing to save at epoch 0
         self._last_saved_at_epoch = 0
-        # This is to allow a callback to trigger a save by setting trainer.save_now = True
+        # This is to allow a callback to trigger a save by setting
+        # trainer.save_now = True
         self._save_externally_triggered = False
 
         # Stopping conditions
@@ -528,7 +531,6 @@ class Estimator(Module):
 
         # transforms
         self._transforms = []
-
 
     def initializer(self):
         pass
@@ -620,8 +622,8 @@ class Estimator(Module):
 
 
 class Trainer(Module):
-    _Model = Model()
-    _DataProvider = DataProvider()
+    # _Model = Model()
+    # _DataProvider = DataProvider()
 
     def __init__(self):
         self._model = None
@@ -635,8 +637,8 @@ class Trainer(Module):
 
 
 class Tester(Module):
-    _Model = Model()
-    _DataProvider = DataProvider()
+    # _Model = Model()
+    # _DataProvider = DataProvider()
 
     @classmethod
     def test(cls):
@@ -644,8 +646,8 @@ class Tester(Module):
 
 
 class Estimator(Module):
-    _Trainer = Trainer()
-    _Tester = Tester()
+    # _Trainer = Trainer()
+    # _Tester = Tester()
 
     def evaluate(self):
         pass
@@ -670,8 +672,8 @@ class Estimator(Module):
 
 
 class Runner(Module):
-    _Trainer = Trainer()
-    _Tester = Tester()
+    # _Trainer = Trainer()
+    # _Tester = Tester()
 
     @classmethod
     def run(cls):
