@@ -58,9 +58,6 @@ from collections import OrderedDict
 import torch.nn as nn
 from torch.autograd import Variable
 
-from ptutils.core.base import AbstractBase
-# from ptutils.core.state import State
-
 
 class Module(object):
     """Base class for all ptutils modules."""
@@ -142,7 +139,7 @@ class Module(object):
             raise KeyError("attribute already exists '{}'".format(name))
         if not isinstance(module, Module) and module is not None:
             raise TypeError("{} is not a Module subclass".format(type(module)))
-        base = module.__base__.upper()
+        base = type(module).__base__.__name__.upper()
         self._modules[name] = module
         object.__setattr__(self, '_' + base, module)
 

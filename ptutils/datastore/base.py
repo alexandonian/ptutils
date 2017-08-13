@@ -31,6 +31,7 @@ class Datastore(object):
 
         Returns:
             object or None
+
         """
         raise NotImplementedError
 
@@ -43,6 +44,7 @@ class Datastore(object):
         Args:
             key: Key naming `value`
             value: the object to store.
+
         """
         raise NotImplementedError
 
@@ -129,6 +131,7 @@ class DictDatastore(Datastore):
 
         Returns:
             object or None
+
         """
         try:
             return self._collection(key)[key]
@@ -141,6 +144,7 @@ class DictDatastore(Datastore):
         Args:
             key: Key naming `value`
             value: the object to store.
+
         """
         if value is None:
             self.delete(key)
@@ -152,6 +156,7 @@ class DictDatastore(Datastore):
 
         Args:
             key: Key naming the object to remove.
+
         """
         try:
             del self._collection(key)[key]
@@ -171,6 +176,7 @@ class DictDatastore(Datastore):
 
         Returns:
             boolean: whether the object exists
+
         """
         return key in self._collection(key)
 
@@ -182,6 +188,7 @@ class DictDatastore(Datastore):
 
         Returns:
             iterable: cursor with all objects matching criteria.
+
         """
         if query in self._items:
             return query(self._items[query].values())

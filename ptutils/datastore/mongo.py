@@ -1,6 +1,4 @@
-"""MongoDB(pymongo) datastore implementation.
-
-"""
+"""MongoDB(pymongo) datastore implementation."""
 
 import pymongo
 import itertools
@@ -9,6 +7,7 @@ import ptutils.datastore as datastore
 
 class Doc(object):
     """Document key constants for datastore documents."""
+
     _id = '_id'
     key = 'key'
     value = 'val'
@@ -16,7 +15,7 @@ class Doc(object):
 
 
 class MongoDatastore(datastore.Datastore):
-    """Represents a Mongo database as a datastore.
+    """Represent a Mongo database as a datastore.
 
     Hello World:
 
@@ -43,8 +42,7 @@ class MongoDatastore(datastore.Datastore):
         self._indexed = {}
 
     def _collectionNamed(self, name):
-        """Returns the `collection` named `name`."""
-
+        """Return the `collection` named `name`."""
         collection = self.database[name]
 
         # ensure there is an index, at least once per run.
@@ -56,8 +54,10 @@ class MongoDatastore(datastore.Datastore):
 
     @staticmethod
     def _collectionNameForKey(key):
-        """Returns the name of the collection to house objects with `key`.
+        """Return the name of the collection to house objects with `key`.
+
         Users can override this function to enforce their own collection naming.
+
         """
         name = str(key.path)[1:]        # remove first slash.
         # no : allowed in collection names, use _
@@ -68,12 +68,12 @@ class MongoDatastore(datastore.Datastore):
         return name
 
     def _collection(self, key):
-        """Returns the `collection` corresponding to `key`."""
+        """Return the `collection` corresponding to `key`."""
         return self._collectionNamed(self._collectionNameForKey(key))
 
     @staticmethod
     def _wrap(key, val):
-        """Returns a value to insert. Non - documents are wrapped in a document."""
+        """Return a value to insert. Non - documents are wrapped in a document."""
         if not isinstance(val, dict) or Doc.key not in val or val[Doc.key] != key:
             return {Doc.key: key, Doc.value: val, Doc.wrapped: True}
 
@@ -85,7 +85,7 @@ class MongoDatastore(datastore.Datastore):
 
     @staticmethod
     def _unwrap(value):
-        """Returns a value to return. Wrapped - documents are unwrapped."""
+        """Return a value to return. Wrapped - documents are unwrapped."""
         if value is not None and Doc.wrapped in value and value[Doc.wrapped]:
             return value[Doc.value]
 
@@ -103,7 +103,7 @@ class MongoDatastore(datastore.Datastore):
     update_opts = {'upsert': True, 'safe': True}
 
     def put(self, key, value):
-        """Stores the object."""
+        """Store the object."""
         strkey = str(key)
         value = self._wrap(strkey, value)
 
@@ -112,15 +112,15 @@ class MongoDatastore(datastore.Datastore):
             {Doc.key: strkey}, value, **self.update_opts)
 
     def delete(self, key):
-        """Removes the object."""
+        """Remove the object."""
         self._collection(key).remove({Doc.key: str(key)})
 
     def contains(self, key):
-        """Returns whether the object is in this datastore."""
+        """Return whether the object is in this datastore."""
         return self._collection(key).find({Doc.key: str(key)}).count() > 0
 
     def query(self, query):
-        """Returns a sequence of objects matching criteria expressed in `query`"""
+        """Return a sequence of objects matching criteria expressed in `query`"""
         coll = self._collection(query.key.child('_'))
         return MongoQuery.translate(coll, query)
 

@@ -17,11 +17,11 @@ class Model(nn.Module):
         nn.Module.__init__(self)
 
 
-class CNN(Model):
-    __name__ = 'cnn'
+class MNIST(nn.Module):
+    __name__ = 'MNIST'
 
     def __init__(self,):
-        super(CNN, self).__init__()
+        super(MNIST, self).__init__()
         self.layer1 = nn.Sequential(
             nn.Conv2d(1, 16, kernel_size=5, padding=2),
             nn.BatchNorm2d(16),

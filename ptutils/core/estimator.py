@@ -1,10 +1,17 @@
-from torch.nn.parallel import DataParallel
-from ptutils.core.module import Module
+"""Estimator.
+
+Encapsulates a neural network model, criterion and optimizer.
+"""
+from torch.autograd import Variable
+from torch.nn.parallel import data_parallel
+
+from ptutils.base.module import Module
 
 
 class Estimator(Module):
 
     def __init__(self, *args, **kwargs):
+        super(Estimator, self).__init__(*args, **kwargs)
 
         # Core
         self._model = None
@@ -17,35 +24,41 @@ class Estimator(Module):
         self._devices = None
         self._use_cuda = False
 
-    def forward(self, *input):
+        self._loss = None
+
+    def forward(self, input):
+        input_var = Variable(input)
         if self._devices is not None:
-            return DataParallel(self.model, input, list(self._devices))
+            return data_parallel(self.model, input_var, list(self._devices))
         else:
-            return self.model(*input)
+            return self.model(input_var)
 
     def loss(self, output, target):
-        loss = self._criterion(output, target)
+        target_var = Variable(target)
+        loss = self._criterion(output, target_var)
         return loss
 
     def compute_gradients(self, loss=None):
         loss = self._state.get('loss') if loss is None else loss
-        if self.optimizer is not None:
-            self.optimizer.compute_gradients(loss)
-        else:
-            loss.backward()
+        # if self.optimizer is not None:
+            # self.optimizer.compute_gradients(loss)
+        # else:
+            # loss.backward()
+        loss.backward()
 
     def apply_gradients(self):
-        self.optimizer.apply_gradients()
+        # self.optimizer.apply_gradients()
+        self.optimizer.step()
 
     def optimize(self, loss=None):
         self.compute_gradients(loss=loss)
         self.apply_gradients()
         self.optimizer.zero_grad()
 
-    def fit(self, input, target):
+    def step(self, input, target):
         output = self.forward(input)
-        loss = self.loss(output, target)
-        self.optimize(loss)
+        self._loss = self.loss(output, target)
+        self.optimize(self._loss)
 
     @property
     def model(self):

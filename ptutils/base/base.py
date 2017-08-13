@@ -13,8 +13,8 @@ class AbstractBase(collections.Container):
         if name is None:
             name = self.__class__.__name__.lower()
         self._name = name
-        self._bases
-        self._params
+        self._bases = collections.OrderedDict()
+        self._params = collections.OrderedDict()
         self._modules = collections.OrderedDict()
         self._parameters = collections.OrderedDict()
 
