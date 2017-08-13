@@ -13,10 +13,12 @@ class AbstractBase(collections.Container):
         if name is None:
             name = self.__class__.__name__.lower()
         self._name = name
+        self._bases
+        self._params
         self._modules = collections.OrderedDict()
         self._parameters = collections.OrderedDict()
 
-    @abc.abstractmethod
+    # @abc.abstractmethod
     def to_params(self):
         raise NotImplemented
 
@@ -24,6 +26,10 @@ class AbstractBase(collections.Container):
     @abc.abstractmethod
     def from_params(cls):
         raise NotImplemented
+
+    def __contains__(self, item):
+        return item in self._bases
+
 
     @classmethod
     def __subclasshook__(cls, subclass):

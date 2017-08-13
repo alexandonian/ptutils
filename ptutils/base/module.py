@@ -62,20 +62,19 @@ from ptutils.core.base import AbstractBase
 # from ptutils.core.state import State
 
 
-class Module(AbstractBase):
+class Module(object):
     """Base class for all ptutils modules."""
-
-    __name__ = 'module'
-    __base__ = 'Module'
 
     def __init__(self, *args, **kwargs):
         self._modules = OrderedDict()
         self._properties = OrderedDict()
 
+        self._name = kwargs.get('name', self.__class__.__name__.lower())
+
         for i, arg in enumerate(args):
 
             if isinstance(arg, Module):
-                self.register_module(arg.__name__, arg)
+                self.register_module(arg._name, arg)
 
             if isinstance(arg, dict):
                 for key, value in arg.items():
