@@ -53,15 +53,15 @@ class TestModule(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """setUpClass is called once for each class before any tests are run."""
+        """Set up class once before any test methods are run."""
 
     @classmethod
     def tearDownClass(cls):
-        """tearDownClass is called once for each class before any tests are run."""
+        """Tear down class is after all test methods have run."""
         pass
 
     def setUp(self):
-        """setUp is called before _each_ test method is executed."""
+        """Setup class before _each_ test method is executed."""
         self.module = self._class()
 
     def tearDown(self):

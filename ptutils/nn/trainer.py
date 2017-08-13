@@ -1,77 +1,111 @@
-import heapq
-from torch.autograd import Variable
 
 
 class Trainer(object):
+    def __init__(self, model=None, **kwargs):
+        super(Trainer, self).__init__(**kwargs)
 
-    def __init__(self, model=None, criterion=None, optimizer=None, dataset=None):
-        self.model = model
-        self.criterion = criterion
-        self.optimizer = optimizer
-        self.dataset = dataset
-        self.iterations = 0
-        self.stats = {}
-        self.plugin_queues = {
-            'iteration': [],
-            'epoch': [],
-            'batch': [],
-            'update': [],
-        }
+        # Core
+        self._model = None
+        self._criterion = None
+        self._optimizer = None
 
-    def register_plugin(self, plugin):
-        plugin.register(self)
+        self._loop = Loop()  # .bind_module(self)
+        self._function = Function().register_module(self)
+        self._callbacks = callback.CallbackEngine().bind_module(self)
 
-        intervals = plugin.trigger_interval
-        if not isinstance(intervals, list):
-            intervals = [intervals]
-        for duration, unit in intervals:
-            queue = self.plugin_queues[unit]
-            queue.append((duration, len(queue), plugin))
+        self._meta = TrainMeta()
+        # self.spec = State()
+        # self.state = State()
+        # self.config = State()
+        # self.history = History()
 
-    def call_plugins(self, queue_name, time, *args):
-        args = (time,) + args
-        queue = self.plugin_queues[queue_name]
-        if len(queue) == 0:
-            return
-        while queue[0][0] <= time:
-            plugin = queue[0][2]
-            getattr(plugin, queue_name)(*args)
-            for trigger in plugin.trigger_interval:
-                if trigger[1] == queue_name:
-                    interval = trigger[0]
-            new_item = (time + interval, queue[0][1], plugin)
-            heapq.heappushpop(queue, new_item)
+    def train_function(self, input, target):
+        self._callbacks.call(self._callbacks.PRE_TRAINING_STEP)
+        self._function.train(input, target)
+        self._callbacks.call(self._callbacks.POST_TRAINING_STEP)
+        if self._has_metrics:
+            self._state.update({name: metric(output, target)
+                                for name, metric in self.metrics.items()})
+        self.history.append(self._state)
 
-    def run(self, epochs=1):
-        for q in self.plugin_queues.values():
-            heapq.heapify(q)
+    def train_epoch(self):
+        self._callbacks.call(self._callbacks.PRE_EPOCH)
+        for i, (input, target) in enumerate(dataloader):
+            target = target.cuda(async=True)
+            input_var = Variable(input, volatile=volatile).cuda()
+            target_var = Variable(target, volatile=volatile).cuda()
+            self.train_function(input_var, target_var)
 
-        for i in range(1, epochs + 1):
-            self.train()
-            self.call_plugins('epoch', i)
+            if self.validate_now:
+                pass
+            if self.save_now:
+                pass
+        self._callbacks.call(self._callbacks.POST_EPOCH)
 
     def train(self):
-        for i, data in enumerate(self.dataset, self.iterations + 1):
-            batch_input, batch_target = data
-            self.call_plugins('batch', i, batch_input, batch_target)
-            input_var = Variable(batch_input)
-            target_var = Variable(batch_target)
+        self._callbacks.call(self._callbacks.PRE_TRAINING)
 
-            plugin_data = [None, None]
+        for epoch in range(self.config.get('epochs')):
+            self.train_epoch()
 
-            def closure():
-                batch_output = self.model(input_var)
-                loss = self.criterion(batch_output, target_var)
-                loss.backward()
-                if plugin_data[0] is None:
-                    plugin_data[0] = batch_output.data
-                    plugin_data[1] = loss.data
-                return loss
+        self._callbacks.call(self._callbacks.POST_TRAINING)
 
-            self.optimizer.zero_grad()
-            self.optimizer.step(closure)
-            self.call_plugins('iteration', i, batch_input, batch_target,
-                              *plugin_data)
-            self.call_plugins('update', i, self.model)
 
-        self.iterations += i
+class TrainConfig(meta.Config):
+    def __init__(self):
+        self.data_config = None
+        self.queue_config = None
+        self.num_steps = 500
+
+
+class TrainSpec(meta.Spec):
+    pass
+
+
+class TrainStats(meta.Stats):
+    pass
+
+
+class TrainState(meta.State):
+    def __init__(self):
+        self.step = 0
+        self.epoch = 0
+        self.batch = 0
+        self.stats = None
+
+
+class TrainHistory(meta.History):
+    def __init__(self):
+        self.states = []
+        self.global_stats = Stats()
+        self.best_stats = Stats()
+
+    def record(self, state):
+        self.states.append((state.step, state))
+        for name, stat in state.stats.items():
+            if stat > self.best_stats[name]:
+                self.best_stats[name] = stat
+
+
+class TrainMeta(meta.Meta):
+    def __init__(self):
+        self.spec = TrainSpec()
+        self.state = TrainState()
+        self.config = TrainConfig()
+        self.history = TrainHistory()
+        self.callbacks = Callbacks()
+
+    def update_batch(self, stats=None):
+        self.state.stats = stats
+        self.history.record(self.state)
+        self.state.step += 1
+        self.state.batch += 1
+
+    def update_step(self, state):
+        self.state.step += 1
+        self.history.record(state)
+
+    def update_epoch(self, state):
+        self.state.step += 1
+        self.state.epoch += 1
+        self.history.record(state)

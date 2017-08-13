@@ -58,19 +58,19 @@ from collections import OrderedDict
 import torch.nn as nn
 from torch.autograd import Variable
 
-from ptutils.core.state import State
+from ptutils.core.base import AbstractBase
+# from ptutils.core.state import State
 
 
-class Module(object):
+class Module(AbstractBase):
     """Base class for all ptutils modules."""
 
     __name__ = 'module'
     __base__ = 'Module'
 
     def __init__(self, *args, **kwargs):
-        self._properties = OrderedDict()
         self._modules = OrderedDict()
-        self._state = State()
+        self._properties = OrderedDict()
 
         for i, arg in enumerate(args):
 

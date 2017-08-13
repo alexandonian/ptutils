@@ -5,10 +5,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-import base
 
-
-class Model(nn.Module, base.Model):
+class Model(nn.Module):
     __name__ = 'model'
     """Wrap nn.Module to change the model.state_dict() separator symbol."""
 
@@ -17,7 +15,6 @@ class Model(nn.Module, base.Model):
 
     def __init__(self, *args, **kwargs):
         nn.Module.__init__(self)
-        base.Model.__init__(self, *args, **kwargs)
 
 
 class CNN(Model):
