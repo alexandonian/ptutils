@@ -183,6 +183,7 @@ class MongoInterface(DBInterface):
 
         Returns:
             all_results: list of full documents from the collection
+
         """
         query = self._mongoify(query)
         results = self.collection.find(query)

@@ -58,6 +58,9 @@ from collections import OrderedDict
 import torch.nn as nn
 from torch.autograd import Variable
 
+class NullModule(object):
+    pass
+
 
 class Module(object):
     """Base class for all ptutils modules."""

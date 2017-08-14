@@ -2,16 +2,16 @@
 
 Coordinates and records interactions between objects.
 """
-from ptutils.base.module import Module
+from ptutils.base.module import NullModule as Module
 
 
-class Coordinator(object):
+class Coordinator(Module):
 
     def __init__(self, *args, **kwargs):
         # super(Coordinator, self).__init__(*args, **kwargs)
 
         # Core
-        self.provider = None
+        self._datastore = None
 
         # Iteration and epoch book-keeping
         # Replace with estimator_state mod

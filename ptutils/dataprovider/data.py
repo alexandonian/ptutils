@@ -1,14 +1,13 @@
 from __future__ import division, print_function, absolute_import
 
-# import h5py
-# from dataloader import DataLoader
+import h5py
 
 import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset as dset
 
+from dataloader import DataLoader
 from ptutils.base.module import Module
-from .dataloader import DataLoader
 
 
 class DataProvider(Module):
@@ -34,7 +33,9 @@ class DataProvider(Module):
     you are free to specify parameters such as batch size, data sampling strategies and the number of
     subprocesses to use for data loading.
     See http://pytorch.org/docs/data.html for more details.
+
     """
+
     __name__ = 'dataprovider'
 
     def __init__(self, *args, **kwargs):
@@ -42,7 +43,7 @@ class DataProvider(Module):
 
     def provide(self):
         """Return a `torch.utils.data.dataloader` given an arbitrary data request."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def __call__(self):
         return self.provide()
@@ -81,17 +82,19 @@ class Dataset(Module, dset):
 
 
 class DataReader(Module):
-    """Interface for DataReader subclasses (e.g. HDF5, TFRecords, etc.)
+    """Interface for DataReader subclasses (e.g. HDF5, TFRecords, etc.).
+
     - Reads data of a specified format efficiently.
     - Exists completely independent of anything ptutils related.
         (Can use is just to read single data file, if desired.)
+
     """
 
     def __init__(self):
         super(DataReader, self).__init__()
 
     def read(self, *data_source):
-        """Loads data from `data_source` into a dictionary of array-like objects.
+        """Load data from `data_source` into a dictionary of array-like objects.
 
         The structure of the data dictionary should reflect intrinsic structure
         of the data source (e.g., if a dataset is partitioned into distinct sets
@@ -99,6 +102,7 @@ class DataReader(Module):
         The `Dataset` class will be responsible for parsing this dict.
 
         Should be overriden by all subclasses.
+
         """
         raise NotImplementedError()
 
@@ -138,8 +142,7 @@ class CIFARProvider(DataProvider):
         self.datasets = {'CIFAR10': {}, 'CIFAR100': {}}
         for mode in self.modes:
             self.datasets['CIFAR10'][mode] = dsets.CIFAR10(root='../tests/resources/data/',
-                                                           train=(
-                                                               mode == 'train'),
+                                                           train=(mode == 'train'),
                                                            transform=transforms.ToTensor(),
                                                            download=True)
             self.datasets['CIFAR100'][mode] = dsets.CIFAR100(root='../tests/resources/data/',
@@ -162,7 +165,6 @@ class ImageNetProvider(DataProvider):
         self.ImageNet = ImageNet
 
     def provide(self, mode='train'):
-
         self.ImageNet.mode = mode
         data_loader = DataLoader(dataset=self.ImageNet,
                                  batch_size=100,
@@ -201,7 +203,7 @@ class ImageNet(Dataset):
         # self.mode = self.data_dict.keys()[0]
 
     def __getitem__(self, index):
-        """Must return an (image, label) tuple given an index."""
+        """Return an (image, label) tuple given an index."""
 
         image = self.data_dict[self.mode]['images'][index, ...]
         label = self.data_dict[self.mode]['labels'][index, ...]

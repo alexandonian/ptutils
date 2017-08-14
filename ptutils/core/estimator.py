@@ -2,6 +2,7 @@
 
 Encapsulates a neural network model, criterion and optimizer.
 """
+import torch
 from torch.autograd import Variable
 from torch.nn.parallel import data_parallel
 
@@ -22,7 +23,25 @@ class Estimator(Module):
         # Replace with estimator_spec mod
         self._dtype = 'float'
         self._devices = None
-        self._use_cuda = False
+        self._use_cuda = torch.cuda.is_available()
+        # self._use_cuda = False
+
+        # self.model = torch.nn.DataParallel(self.model).cuda()
+
+        # use_cuda = torch.cuda.is_available()
+        # dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
+
+        # if use_cuda:
+        #     self.model.cuda()
+        #     self.criterion.cuda()
+
+        # # Select mode
+        # if mode == 'train':
+        #     self.model.train()
+        #     volatile = False
+        # else:
+        #     self.model.eval()
+        #     volatile = True
 
         self._loss = None
 
