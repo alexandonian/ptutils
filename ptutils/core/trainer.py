@@ -37,10 +37,6 @@ class Trainer(Coordinator):
 
     def step(self, input, target):
 
-        # self.estimator.optimizer.zero_grad()
-        # output = self.estimator.forward(input)
-        # loss = self.estimator.loss(output, target)
-        # self.estimator.optimize(loss)
         self.estimator.step(input, target)
         self._step_count += 1
         print('step: {}; loss: {}'.format(self._step_count,
