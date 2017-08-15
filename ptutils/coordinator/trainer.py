@@ -11,10 +11,10 @@ from coordinator import Coordinator
 class Trainer(Coordinator):
 
     def __init__(self, model=None, datastore=None, datasource=None, **kwargs):
-        super(Trainer, self).__init__(self,
-                                      model=None,
+        super(Trainer, self).__init__(model=None,
                                       datastore=None,
-                                      datasource=None)
+                                      datasource=None,
+                                      **kwargs)
 
         # Core
         self._model = None
@@ -52,16 +52,16 @@ class Trainer(Coordinator):
 
     @property
     def model(self):
-        return self._model
+        return self._bases['model']
 
     @model.setter
     def model(self, value):
-        self._model = value
+        self._bases['model'] = value
 
     @property
     def datasource(self):
-        return self._datasource
+        return self._bases['datasource']
 
     @datasource.setter
     def datasource(self, value):
-        self._datasource = value
+        self._bases['datasource'] = value

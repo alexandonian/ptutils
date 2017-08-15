@@ -1,7 +1,8 @@
 from __future__ import division, print_function, absolute_import
 
+from ptutils.base import Base
 
-class Dataset(object):
+class Dataset(Base):
     """An abstract class representing a Dataset.
 
     All other datasets should subclass it. All subclasses should override

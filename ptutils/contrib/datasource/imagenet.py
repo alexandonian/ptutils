@@ -3,16 +3,17 @@
 Primitive ImageNet Dataset and DataProvider classes.
 
 """
-from data import Dataset
-from data import DataLoader
-from data import DataProvider
+
+from ptutils.datasource import Dataset
+from ptutils.datasource import DataLoader
+from ptutils.datasource import Datasource
 
 
-class ImageNetProvider(DataProvider):
+class ImageNetSource(Datasource):
     """ImageNet DataProvider class."""
 
     def __init__(self, ImageNet):
-        super(ImageNetProvider, self).__init__()
+        super(ImageNetSource, self).__init__()
         self.ImageNet = ImageNet
 
     def provide(self, mode='train'):

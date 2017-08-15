@@ -6,10 +6,10 @@ import torch
 from torch.autograd import Variable
 from torch.nn.parallel import data_parallel
 
-from ptutils.base.module import NullModule as Module
+from ptutils.base import Base
 
 
-class Model(Module):
+class Model(Base):
 
     def __init__(self, *args, **kwargs):
         super(Model, self).__init__(*args, **kwargs)
@@ -20,7 +20,7 @@ class Model(Module):
         self._optimizer = None
 
         # GPU and dtype business
-        # Replace with estimator_spec mod
+        # Replace with model_spec mod
         self._dtype = 'float'
         self._devices = None
         self._use_cuda = torch.cuda.is_available()
@@ -58,7 +58,7 @@ class Model(Module):
         return loss
 
     def compute_gradients(self, loss=None):
-        loss = self._state.get('loss') if loss is None else loss
+        # loss = self._state.get('loss') if loss is None else loss
         # if self.optimizer is not None:
             # self.optimizer.compute_gradients(loss)
         # else:

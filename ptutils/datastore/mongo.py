@@ -10,11 +10,12 @@ from bson.binary import Binary
 from bson.objectid import ObjectId
 
 import torch
-from ptutils.base.module import NullModule as Module
+from ptutils.base import Base
+# from ptutils.base.module import NullModule as Module
 # from ptutils.datastore import Datastore
 
 
-class MongoDatastore(Module):
+class MongoDatastore(Base):
     """Simple and lightweight MongoDB datastore for saving experimental data files."""
 
     __name__ = 'mongo_datastore'

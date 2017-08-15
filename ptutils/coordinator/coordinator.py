@@ -3,11 +3,11 @@
 Coordinates and records interactions between ptutils objects.
 
 """
+from ptutils.base import Base
 from ptutils.utils.exceptions import StepError
-from ptutils.base.module import NullModule as Module
 
 
-class Coordinator(Module):
+class Coordinator(Base):
 
     def __init__(self, *args, **kwargs):
         super(Coordinator, self).__init__(*args, **kwargs)
@@ -31,10 +31,11 @@ class Coordinator(Module):
     @property
     def datastore(self):
         return self._datastore
+        return self._bases['datastore']
 
     @datastore.setter
     def datastore(self, value):
-        self._datastore = value
+        self._bases['datastore'] = value
 
     @property
     def global_step(self):

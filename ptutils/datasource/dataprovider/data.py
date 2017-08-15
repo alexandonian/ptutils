@@ -6,12 +6,12 @@ import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset as dset
 
+from ptutils.base import Base
 from ptutils.datasource.dataloader import DataLoader
-from ptutils.base.module import Module
 
 
-class DataProvider(Module):
-    """Interface for all DataProvider subclasses.
+class Datasource(Base):
+    """Interface for all Datasource subclasses.
 
     The `DataProvider` class is responsible for parsing incoming requests from
     a `ptutils.Session` and returning the appropriate data.
@@ -36,10 +36,10 @@ class DataProvider(Module):
 
     """
 
-    __name__ = 'dataprovider'
+    __name__ = 'datasource'
 
     def __init__(self, *args, **kwargs):
-        super(DataProvider, self).__init__(*args, **kwargs)
+        super(Datasource, self).__init__(*args, **kwargs)
 
     def provide(self):
         """Return a `torch.utils.data.dataloader` given an arbitrary data request."""
@@ -49,7 +49,7 @@ class DataProvider(Module):
         return self.provide()
 
 
-class Dataset(Module, dset):
+class Dataset(Base, dset):
     """Interface for all Dataset subclasses.
 
     This class simply extends Pytorch's Dataset class to be able to load data
@@ -81,7 +81,7 @@ class Dataset(Module, dset):
         raise NotImplementedError()
 
 
-class DataReader(Module):
+class DataReader(Base):
     """Interface for DataReader subclasses (e.g. HDF5, TFRecords, etc.).
 
     - Reads data of a specified format efficiently.

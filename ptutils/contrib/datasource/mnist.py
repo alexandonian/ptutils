@@ -9,12 +9,12 @@ import torchvision.transforms as transforms
 
 from ptutils.datasource import Dataset
 from ptutils.datasource import DataLoader
-from ptutils.datasource import DataProvider
+from ptutils.datasource import Datasource
 
 
-class MNISTProvider(DataProvider):
+class MNISTSource(Datasource):
     def __init__(self):
-        super(MNISTProvider, self).__init__()
+        super(MNISTSource, self).__init__()
         self.modes = ('train', 'test')
         for mode in self.modes:
             self[mode] = MNIST(root='../tests/resources/data/',

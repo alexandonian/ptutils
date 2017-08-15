@@ -2,9 +2,10 @@ import torch.nn as nn
 import torch.optim as optim
 
 from ptutils.model import Model
-from ptutils.net.layers import MNIST
+from ptutils.net.layers.layers import MNIST
 from ptutils.contrib.datasource import mnist
 from ptutils.datastore import MongoDatastore
+from ptutils.model.optimizer import Optimizer
 from ptutils.coordinator.trainer import Trainer
 
 
@@ -23,8 +24,8 @@ class MNISTTrainer(Trainer):
     def __init__(self):
         super(MNISTTrainer, self).__init__()
         self.model = MNISTModel()
-        self.datastore = MongoDatastore('test', 'test')
-        self.datasource = mnist.MNISTProvider()
+        self.datastore = MongoDatastore('testdb', 'testcol')
+        self.datasource = mnist.MNISTSource()
 
     def step(self, input, target):
         super(MNISTTrainer, self).step(input, target)
@@ -33,4 +34,5 @@ class MNISTTrainer(Trainer):
 
 
 trainer = MNISTTrainer()
-trainer.run()
+# trainer.run()
+# o = Optimizer('Adam')

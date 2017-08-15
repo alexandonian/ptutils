@@ -7,13 +7,14 @@ Primitive CIFAR Dataset and DataProvider classes.
 import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 
-from datasource import DataLoader
-from datasource import DataProvider
+from ptutils.datasource import Dataset
+from ptutils.datasource import DataLoader
+from ptutils.datasource import Datasource
 
 
-class CIFARProvider(DataProvider):
+class CIFARSource(Datasource):
     def __init__(self):
-        super(CIFARProvider, self).__init__()
+        super(CIFARSource, self).__init__()
         self.modes = ('train', 'test')
         self.datasets = {'CIFAR10': {}, 'CIFAR100': {}}
         for mode in self.modes:
