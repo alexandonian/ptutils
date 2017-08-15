@@ -24,14 +24,14 @@ class MNISTTrainer(Trainer):
     def __init__(self):
         super(MNISTTrainer, self).__init__()
         self.model = MNISTModel()
-        self.datastore = MongoDatastore('testdb', 'testcol')
+        self.datastore = MongoDatastore('test_mnist', 'testcol')
         self.datasource = mnist.MNISTSource()
 
     def step(self, input, target):
         super(MNISTTrainer, self).step(input, target)
         self.datastore.save({'step': self.global_step,
                              'loss': self.model._loss.data[0]})
-        print(trainer.to_params())
+        print(str(trainer.to_params()))
 
 
 trainer = MNISTTrainer()

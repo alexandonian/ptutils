@@ -15,9 +15,9 @@ class Model(Base):
         super(Model, self).__init__(*args, **kwargs)
 
         # Core
-        self._net = None
-        self._criterion = None
-        self._optimizer = None
+        # self._net = None
+        # self._criterion = None
+        # self._optimizer = None
 
         # GPU and dtype business
         # Replace with model_spec mod
@@ -81,24 +81,24 @@ class Model(Base):
 
     @property
     def net(self):
-        return self._net
+        return self._bases['net']
 
     @net.setter
     def net(self, value):
-        self._net = value
+        self._bases['net'] = value
 
     @property
     def criterion(self):
-        return self._criterion
+        return self._bases['criterion']
 
     @criterion.setter
     def criterion(self, value):
-        self._criterion = value
+        self._bases['criterion'] = value
 
     @property
     def optimizer(self):
-        return self._optimizer
+        return self._bases['optimizer']
 
     @optimizer.setter
     def optimizer(self, value):
-        self._optimizer = value
+        self._bases['optimizer'] = value

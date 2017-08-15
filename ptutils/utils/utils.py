@@ -8,6 +8,7 @@ import pkgutil
 import inspect
 import logging
 import datetime
+import collections
 import pkg_resources
 import cPickle as pickle
 

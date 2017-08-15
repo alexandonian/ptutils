@@ -8,7 +8,7 @@ import collections
 class Base(object):
 
     def __init__(self, *args, **kwargs):
-        self._name = kwargs.get('name', self.__class__.__name__.lower())
+        self._name = kwargs.get('name', type(self).__name__.lower())
         self._bases = collections.OrderedDict()
         self._params = collections.OrderedDict()
 
@@ -35,12 +35,11 @@ class Base(object):
 
     def to_params(self):
         params = {}
-        # return {name: base._params for name, base in self._bases.items()}
         for name, param in self._params.items():
             if param is not None:
                 params[name] = param
         for name, base in self._bases.items():
-                params[name] = base.to_params()
+            params[name] = base.to_params()
         return params
 
     @classmethod
@@ -54,13 +53,12 @@ class Base(object):
         params['_params'] = copy.copy(params)
         return cls(**params)
 
-
-
     def __setattr__(self, name, value):
         if isinstance(value, Base):
             self._bases[name] = value
-        elif not name.startswith('_'):
-            self._params[name] = value
+        # else:
+            if not name.startswith('_'):
+                self._params[name] = value
         object.__setattr__(self, name, value)
 
     def __getattr__(self, name):
@@ -82,7 +80,7 @@ class Base(object):
 
     def __repr__(self):
         """Return module string representation."""
-        repstr = '{} ({}): ('.format(self.__class__.__name__, self._name)
+        repstr = '{} ({}): ('.format(type(self).__name__, self._name)
         if self._bases:
             repstr += '\n'
         for name, base in self._bases.items():
