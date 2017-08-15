@@ -61,6 +61,7 @@ class MongoInterface(DBInterface):
         super(MongoInterface, self).__init__()
 
         self.db_name = db_name
+        self.database_name = database_name
         self.collection_name = collection_name
         self.hostname = hostname
         self.port = port

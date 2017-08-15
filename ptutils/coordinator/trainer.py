@@ -19,7 +19,7 @@ class Trainer(Coordinator):
         # Core
         self._model = None
         self._datastore = None
-        self._datasource= None
+        self._datasource = None
 
         self.test_step = None
         self.train_step = None
@@ -31,29 +31,37 @@ class Trainer(Coordinator):
 
         # Iteration and epoch book-keeping
         # Replace with estimator_state mod
-        self._step_count = 0
+        # self._global_step = 0
         self._epoch_count = 0
         self._batch_count = 0
 
     def step(self, input, target):
+        super(Trainer, self).step()
 
-        self.model(input, target)
-        self._step_count += 1
-        print('step: {}; loss: {}'.format(self._step_count,
-                                          self.estimator._loss.data[0]))
+        self.model.forward(input, target)
+        print('step: {}; loss: {}'.format(self.global_step,
+                                          self.model._loss.data[0]))
 
     def loop(self, dataloader):
         for input, target in dataloader:
             self.step(input, target)
 
     def run(self):
-        input = self.provider.provide()
-        self.loop(dataloader)
+        input = self.datasource.provide()
+        self.loop(input)
 
     @property
     def model(self):
         return self._model
 
+    @model.setter
+    def model(self, value):
+        self._model = value
+
     @property
     def datasource(self):
         return self._datasource
+
+    @datasource.setter
+    def datasource(self, value):
+        self._datasource = value

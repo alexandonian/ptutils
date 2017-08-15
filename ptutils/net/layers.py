@@ -8,18 +8,18 @@ import torch.optim as optim
 from ptutils.base.module import NullModule as Module
 
 
-class Model(nn.Module):
-    __name__ = 'model'
-    """Wrap nn.Module to change the model.state_dict() separator symbol."""
+# class Model(nn.Module):
+#     __name__ = 'model'
+#     """Wrap nn.Module to change the model.state_dict() separator symbol."""
 
-    # Model class will be responsible for parsing state_dicts and loading partial
-    # models, reusing parts of trained networks etc.
+#     # Model class will be responsible for parsing state_dicts and loading partial
+#     # models, reusing parts of trained networks etc.
 
-    def __init__(self, *args, **kwargs):
-        nn.Module.__init__(self)
+#     def __init__(self, *args, **kwargs):
+#         nn.Module.__init__(self)
 
 
-class MNIST(Module):
+class MNIST(nn.Module):
     __name__ = 'MNIST'
 
     def __init__(self,):
@@ -46,7 +46,7 @@ class MNIST(Module):
         return out
 
 
-class DynamicNet(Model):
+class DynamicNet(nn.Module):
     def __init__(self, D_in, H, D_out):
         super(DynamicNet, self).__init__()
         self.input_linear = torch.nn.Linear(D_in, H)
@@ -61,7 +61,7 @@ class DynamicNet(Model):
         return y_pred
 
 
-class AlexNet(Model):
+class AlexNet(nn.Module):
     __name__ = 'alexnet'
     _DEFAULTS = {
         'num_classes': 10,
@@ -106,7 +106,7 @@ class AlexNet(Model):
         return x
 
 
-class CIFARConv(Model):
+class CIFARConv(nn.Module):
 
     def __init__(self, num_classes=10):
         super(CIFARConv, self).__init__()
@@ -147,7 +147,7 @@ class CIFARConv(Model):
         return x
 
 
-class CIFARConvOld(Model):
+class CIFARConvOld(nn.Module):
     def __init__(self, num_classes=10):
         super(CIFARConv, self).__init__()
         self.layer1 = nn.Sequential(

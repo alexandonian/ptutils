@@ -1,202 +1,319 @@
 """MongoDB(pymongo) datastore implementation."""
-
+import copy
+import gridfs
+import hashlib
 import pymongo
-import itertools
-import ptutils.datastore as datastore
+import datetime
+import numpy as np
+import cPickle as pickle
+from bson.binary import Binary
+from bson.objectid import ObjectId
+
+import torch
+from ptutils.base.module import NullModule as Module
+# from ptutils.datastore import Datastore
 
 
-class Doc(object):
-    """Document key constants for datastore documents."""
+class MongoDatastore(Module):
+    """Simple and lightweight MongoDB datastore for saving experimental data files."""
 
-    _id = '_id'
-    key = 'key'
-    value = 'val'
-    wrapped = '_wrapped'
+    __name__ = 'mongo_datastore'
 
+    def __init__(self,
+                 database_name,
+                 collection_name,
+                 hostname='localhost',
+                 port=27017,
+                 **kwargs):
+        super(MongoDatastore, self).__init__(**kwargs)
 
-class MongoDatastore(datastore.Datastore):
-    """Represent a Mongo database as a datastore.
+        self.port = port
+        self.hostname = hostname
+        self.database_name = database_name
+        self.collection_name = collection_name
 
-    Hello World:
+        self.client = pymongo.MongoClient(self.hostname, self.port)
+        self.database = self.client[self.database_name]
+        self.collection = self.database[self.collection_name]
+        self.filesystem = gridfs.GridFS(self.database)
 
-            >> > import pymongo
-            >> > import datastore.mongo
-            >> >
-            >> > conn = pymongo.Connection()
-            >> > ds = datastore.mongo.MongoDatastore(conn.test_db)
-            >> >
-            >> > hello = datastore.Key('hello')
-            >> > ds.put(hello, 'world')
-            >> > ds.contains(hello)
-            True
-            >> > ds.get(hello)
-            'world'
-            >> > ds.delete(hello)
-            >> > ds.get(hello)
-            None
+    def _close(self):
+        self.client.close()
 
-    """
+    def __del__(self):
+        self._close()
 
-    def __init__(self, mongoDatabase):
-        self.database = mongoDatabase
-        self._indexed = {}
+    # Public methods: ---------------------------------------------------------
 
-    def _collectionNamed(self, name):
-        """Return the `collection` named `name`."""
-        collection = self.database[name]
+    def save(self, document):
+        """Store a dictionary or list of dictionaries as as a document in collection.
 
-        # ensure there is an index, at least once per run.
-        if name not in self._indexed:
-            collection.create_index(Doc.key, unique=True)
-            self._indexed[name] = True
+        The collection is specified in the initialization of the object.
 
-        return collection
+        Note that if the dictionary has an '_id' field, and a document in the
+        collection as the same '_id' key-value pair, that object will be
+        overwritten.  Any tensors will be stored in the gridFS,
+        replaced with ObjectId pointers, and a list of their ObjectIds will be
+        also be stored in the 'tensor_id' key-value pair.  If re-saving an
+        object- the method will check for old gridfs objects and delete them.
 
-    @staticmethod
-    def _collectionNameForKey(key):
-        """Return the name of the collection to house objects with `key`.
+        Args:
+            document: dictionary of arbitrary size and structure,
+            can contain tensors. Can also be a list of such objects.
 
-        Users can override this function to enforce their own collection naming.
+        Returns:
+            id_values: list of ObjectIds of the inserted object(s).
 
         """
-        name = str(key.path)[1:]        # remove first slash.
-        # no : allowed in collection names, use _
-        name = name.replace(':', '_')
-        # no / allowed in collection names, use .
-        name = name.replace('/', '.')
-        name = name or '_'              # if collection name is empty, use _
-        return name
+        # Simplfy things below by making even a single document a list.
+        if not isinstance(document, list):
+            document = [document]
 
-    def _collection(self, key):
-        """Return the `collection` corresponding to `key`."""
-        return self._collectionNamed(self._collectionNameForKey(key))
+        object_ids = []
+        for doc in document:
 
-    @staticmethod
-    def _wrap(key, val):
-        """Return a value to insert. Non - documents are wrapped in a document."""
-        if not isinstance(val, dict) or Doc.key not in val or val[Doc.key] != key:
-            return {Doc.key: key, Doc.value: val, Doc.wrapped: True}
+            # TODO: Only Variables created explicitly by the user (graph leaves)
+            # support the deepcopy protocal at the moment... Thus, a RuntimeError
+            # is raised when Variables not created by the users are saved.
+            doc_copy = copy.deepcopy(doc)
 
-        # TODO is this necessary?
-        if Doc._id in val:
-            del val[Doc._id]
+            # Make a list of any existing referenced gridfs files.
+            try:
+                self._old_tensor_ids = doc_copy['_tensor_ids']
+            except KeyError:
+                self._old_tensor_ids = []
 
-        return val
+            self._new_tensor_ids = []
 
-    @staticmethod
-    def _unwrap(value):
-        """Return a value to return. Wrapped - documents are unwrapped."""
-        if value is not None and Doc.wrapped in value and value[Doc.wrapped]:
-            return value[Doc.value]
+            # Replace tensors with either a new gridfs file or a reference to
+            # the old gridfs file.
+            doc_copy = self._save_tensors(doc_copy)
 
-        if isinstance(value, dict) and Doc._id in value:
-            del value[Doc._id]
+            doc['_tensor_ids'] = self._new_tensor_ids
+            doc_copy['_tensor_ids'] = self._new_tensor_ids
 
-        return value
+            # Cleanup any remaining gridfs files (these used to be pointed to by document, but no
+            # longer match any tensor that was in the db.
+            for id in self._old_tensor_ids:
+                self.filesystem.delete(id)
+            self._old_tensor_ids = []
 
-    def get(self, key):
-        """Return the object named by key."""
-        # query the corresponding mongodb collection for this key
-        value = self._collection(key).find_one({Doc.key: str(key)})
-        return self._unwrap(value)
+            # Add insertion date field to every document.
+            doc['insertion_date'] = datetime.datetime.now()
+            doc_copy['insertion_date'] = datetime.datetime.now()
 
-    update_opts = {'upsert': True, 'safe': True}
+            # Insert into the collection and restore full data into original
+            # document object
+            doc_copy = self._mongoify(doc_copy)
+            new_id = self.collection.save(doc_copy)
+            doc['_id'] = new_id
+            object_ids.append(new_id)
 
-    def put(self, key, value):
-        """Store the object."""
-        strkey = str(key)
-        value = self._wrap(strkey, value)
+        return object_ids
 
-        # update (or insert) the relevant document matching key
-        self._collection(key).update(
-            {Doc.key: strkey}, value, **self.update_opts)
+    def load_from_ids(self, ids):
+        """Conveience function to load from a list of ObjectIds or from their
+         string representations.  Takes a singleton or a list of either type.
 
-    def delete(self, key):
-        """Remove the object."""
-        self._collection(key).remove({Doc.key: str(key)})
+        Args:
+            ids: can be an ObjectId, string representation of an ObjectId,
+            or a list containing items of either type.
 
-    def contains(self, key):
-        """Return whether the object is in this datastore."""
-        return self._collection(key).find({Doc.key: str(key)}).count() > 0
+        Returns:
+            out: list of documents from the DB.  If a document w/the object
+                did not exist, a None object is returned instead.
 
-    def query(self, query):
-        """Return a sequence of objects matching criteria expressed in `query`"""
-        coll = self._collection(query.key.child('_'))
-        return MongoQuery.translate(coll, query)
+        """
+        if type(ids) is not list:
+            ids = [ids]
 
+        out = []
 
-def unwrapper_gen(iterable):
-    """A generator to unwrap results in `iterable`."""
-    for item in iterable:
-        yield MongoDatastore._unwrap(item)
+        for id in ids:
+            if type(id) is ObjectId:
+                obj_id = id
+            elif type(id) is str or type(id) is unicode:
+                try:
+                    obj_id = ObjectId(id)
+                except TypeError:
+                    obj_id = id
+            out.append(self.load({'_id': obj_id}))
 
+        return out
 
-class MongoQuery(object):
-    """Translates queries from dronestore queries to mongodb queries."""
-    operators = {'>': '$gt', '>=': '$gte',
-                 '!=': '$ne', '<=': '$lte', '<': '$lt'}
+    def load(self, query, get_tensors=True):
+        """Perform a search using the presented query.
 
-    @classmethod
-    def translate(self, collection, query):
-        """Translate given datastore `query` to a mongodb query on `collection`."""
-        # must call find
-        mongo_cursor = collection.find(self.filters(query.filters))
+        Args:
+            query: dictionary of key-value pairs to use for querying the mongodb
 
-        if len(query.orders) > 0:
-            mongo_cursor.sort(self.orders(query.orders))
+        Returns:
+            all_results: list of full documents from the collection
 
-        if query.offset > 0:
-            mongo_cursor.skip(query.offset)
+        """
+        query = self._mongoify(query)
+        results = self.collection.find(query)
 
-        # must execute before the limit to make sure the counts yield only
-        # skipped.
-        skip = mongo_cursor.count() - mongo_cursor.count(with_limit_and_skip=True)
+        if get_tensors:
+            all_results = [self._de_mongoify(
+                self._load_tensor(doc)) for doc in results]
+        else:
+            all_results = [self._de_mongoify(doc) for doc in results]
 
-        if query.limit:
-            mongo_cursor.limit(query.limit)
-
-        # make sure to unwrap all retrieved values
-        iterable = unwrapper_gen(mongo_cursor)
-
-        # create datastore Cursor with query and iterable of results
-        datastore_cursor = datastore.Cursor(query, iterable)
-        datastore_cursor.skipped = skip
-        return datastore_cursor
-
-    @classmethod
-    def filter(cls, filter):
-        """Transform given `filter` into a mongodb filter tuple."""
-        if filter.op == '=':
-            return filter.field, filter.value
-        return filter.field, {cls.operators[filter.op]: filter.value}
-
-    @classmethod
-    def filters(cls, filters):
-        """Transform given `filters` into a mongodb filter dictionary."""
-        filter_list = [cls.filter(f) for f in filters]
-        key_for_filter = lambda f: f[0]
-        sorted_filters = sorted(filter_list, key=key_for_filter)
-        grouped_filters = itertools.groupby(sorted_filters, key_for_filter)
-
-        def combine_filters(field, grouped):
-            filters = [gf[1] for gf in grouped]
-            is_conditional = lambda f: hasattr(f, 'items')
-            conditionals = filter(is_conditional, filters)
-            if len(conditionals):
-                if len(conditionals) < len(filters):
-                    raise ValueError(
-                        'invalid combination of conditional and non-conditional filters for field %s' % field)
-                return field, dict(f.items()[0] for f in conditionals)
-            elif len(filters) > 1:
-                raise ValueError('multiple filters for field %s' % field)
+        if all_results:
+            if len(all_results) > 1:
+                return all_results
+            elif len(all_results) == 1:
+                return all_results[0]
             else:
-                return field, filters[0]
+                return None
+        else:
+            return None
 
-        return dict(combine_filters(field, group) for (field, group) in grouped_filters)
+    def delete(self, object_id):
+        """Delete a specific document from the collection based on the objectId.
 
-    @classmethod
-    def orders(cls, orders):
-        """Transform given `orders` into a mongodb order list."""
-        keys = [cls.field(o.field) for o in orders]
-        vals = [1 if o.isAscending() else -1 for o in orders]
-        return zip(keys, vals)
+        Note that it first deletes all the gridFS files pointed to by ObjectIds
+        within the document.
+
+        Use with caution, clearly.
+
+        Args:
+            object_id: an id of an object in the database.
+        """
+        document_to_delete = self.collection.find_one({"_id": object_id})
+        tensors_to_delete = document_to_delete['_tensor_ids']
+        for tensor_id in tensors_to_delete:
+            self.filesystem.delete(tensor_id)
+        self.collection.remove(object_id)
+
+    # Private methods ---------------------------------------------------------
+
+    def _tensor_to_binary(self, tensor):
+        """Utility method to turn an tensor/array into a BSON Binary string.
+
+        Called by save_tensors.
+
+        Args:
+            tensor: tensor of arbitrary dimension.
+
+        Returns:
+            BSON Binary object a pickled tensor.
+        """
+        return Binary(pickle.dumps(tensor, protocol=2), subtype=128)
+
+    def _binary_to_tensor(self, binary):
+        """Convert a pickled tensor string back into a tensor.
+
+        Called by load_tensors.
+
+        Args:
+            binary: BSON Binary object a pickled tensor.
+
+        Returns:
+            Tensor of arbitrary dimension.
+
+        """
+        return pickle.loads(binary)
+
+    def _replace(self, document, replace='.', replacement='__'):
+        """Replace `replace` in dictionary keys with `replacement`."""
+        for (key, value) in document.items():
+            new_key = key.replace(replace, replacement)
+            if isinstance(value, dict):
+                document[new_key] = self._replace(document.pop(key),
+                                                  replace=replace,
+                                                  replacement=replacement)
+            else:
+                document[new_key] = document.pop(key)
+        return document
+
+    def _mongoify(self, document):
+        return self._replace(document)
+
+    def _de_mongoify(self, document):
+        return self._replace(document, replace='__', replacement='.')
+
+    def _load_tensor(self, document):
+        """Replace ObjectIds with their corresponding gridFS data.
+
+        Utility method to recurse through a document and gather all ObjectIds and
+        replace them one by one with their corresponding data from the gridFS collection.
+
+        Skips any entries with a key of '_id'.
+
+        Note that it modifies the document in place.
+
+        Args:
+            document: dictionary-like document, storable in mongodb.
+
+        Returns:
+            document: dictionary-like document, storable in mongodb.
+
+        """
+        for (key, value) in document.items():
+            if isinstance(value, ObjectId) and key != '_id':
+                if key == '_Variable_data':
+                    document = torch.autograd.Variable(
+                        self._binary_to_tensor(self.filesystem.get(value).read()))
+                else:
+                    document[key] = self._binary_to_tensor(
+                        self.filesystem.get(value).read())
+            elif isinstance(value, dict):
+                document[key] = self._load_tensor(value)
+        return document
+
+    def _save_tensors(self, document):
+        """Replace tensors with a reference to their location in gridFS.
+
+        Utility method to recurse through a document and replace all tensors
+        and store them in the gridfs, replacing the actual tensors with references to the
+        gridfs path.
+
+        Called by save()
+
+        Note that it modifies the document in place, although we return it, too
+
+        Args:
+            document: dictionary like-document, storable in mongodb.
+
+        Returns:
+            document: dictionary like-document, storable in mongodb.
+
+        """
+        for (key, value) in document.items():
+
+            if isinstance(value, torch.autograd.Variable):
+                value = {'_Variable_data': value.data}
+
+            if isinstance(value, np.ndarray) or torch.is_tensor(value):
+                data_BSON = self._tensor_to_binary(value)
+                data_MD5 = hashlib.md5(data_BSON).hexdigest()
+
+                # Does this tensor match the hash of anything in the object
+                # already?
+                match = False
+                for tensor_id in self._old_tensor_ids:
+                    print('Checking if {} is already in the db... '.format(tensor_id))
+                    if data_MD5 == self.filesystem.get(tensor_id).md5:
+                        match = True
+                        # print('Tensor is already in the db. Replacing tensor with old OjbectId: {}'.format(tensor_id))
+                        document[key] = tensor_id
+                        self._old_tensor_ids.remove(tensor_id)
+                        self._new_tensor_ids.append(tensor_id)
+                if not match:
+                    # print('Tensor is not in the db. Inserting new gridfs file...')
+                    tensor_id = self.filesystem.put(self._tensor_to_binary(value))
+                    document[key] = tensor_id
+                    self._new_tensor_ids.append(tensor_id)
+
+            elif isinstance(value, dict):
+                document[key] = self._save_tensors(value)
+
+            elif isinstance(value, np.number):
+                if isinstance(value, np.integer):
+                    document[key] = int(value)
+                elif isinstance(value, np.inexact):
+                    document[key] = float(value)
+
+        return document

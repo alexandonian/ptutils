@@ -15,7 +15,7 @@ class Model(Module):
         super(Model, self).__init__(*args, **kwargs)
 
         # Core
-        self._model = None
+        self._net = None
         self._criterion = None
         self._optimizer = None
 
@@ -48,9 +48,9 @@ class Model(Module):
     def output(self, input):
         input_var = Variable(input)
         if self._devices is not None:
-            return data_parallel(self.model, input_var, list(self._devices))
+            return data_parallel(self.net, input_var, list(self._devices))
         else:
-            return self.model(input_var)
+            return self.net(input_var)
 
     def loss(self, output, target):
         target_var = Variable(target)
@@ -80,13 +80,25 @@ class Model(Module):
         self.optimize(self._loss)
 
     @property
-    def model(self):
-        return self._model
+    def net(self):
+        return self._net
+
+    @net.setter
+    def net(self, value):
+        self._net = value
 
     @property
     def criterion(self):
         return self._criterion
 
+    @criterion.setter
+    def criterion(self, value):
+        self._criterion = value
+
     @property
     def optimizer(self):
         return self._optimizer
+
+    @optimizer.setter
+    def optimizer(self, value):
+        self._optimizer = value

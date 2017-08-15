@@ -1,24 +1,26 @@
 """Coordinator.
 
 Coordinates and records interactions between ptutils objects.
+
 """
+from ptutils.utils.exceptions import StepError
 from ptutils.base.module import NullModule as Module
 
 
 class Coordinator(Module):
 
     def __init__(self, *args, **kwargs):
-        # super(Coordinator, self).__init__(*args, **kwargs)
+        super(Coordinator, self).__init__(*args, **kwargs)
 
         # Core
+        self._global_step = 0
         self._datastore = None
 
         # Iteration and epoch book-keeping
         # Replace with Coordinator_ state mod
-        self._step = 0
 
     def step(self):
-        pass
+        self.global_step += 1
 
     def loop(self):
         pass
@@ -29,3 +31,20 @@ class Coordinator(Module):
     @property
     def datastore(self):
         return self._datastore
+
+    @datastore.setter
+    def datastore(self, value):
+        self._datastore = value
+
+    @property
+    def global_step(self):
+        return self._global_step
+
+    @global_step.setter
+    def global_step(self, value):
+        if value <= self._global_step:
+            raise StepError('The global step should have been incremented.')
+        elif value > (self._global_step + 1):
+            raise StepError('The global step can only be incremented by one.')
+        else:
+            self._global_step = value

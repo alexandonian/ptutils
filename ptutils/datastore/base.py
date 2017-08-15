@@ -27,7 +27,7 @@ class Datastore(object):
         None takes the role of default value, so no KeyError exception is raised.
 
         Args:
-            key: Key naming the object to retrieve
+            key: Key naming the object to retrieve.
 
         Returns:
             object or None
@@ -42,7 +42,7 @@ class Datastore(object):
         It is recommended to use simple objects (strings, numbers, lists, dicts).
 
         Args:
-            key: Key naming `value`
+            key: Key naming `value`.
             value: the object to store.
 
         """
@@ -53,6 +53,7 @@ class Datastore(object):
 
         Args:
             key: Key naming the object to remove.
+
         """
         raise NotImplementedError
 
@@ -68,6 +69,7 @@ class Datastore(object):
 
         Raturns:
             iterable cursor with all objects matching criteria
+
         """
         raise NotImplementedError
 
@@ -83,7 +85,7 @@ class Datastore(object):
             key: Key naming the object to check.
 
         Returns:
-            boolean whether the object exists
+            boolean: whether the object exists
 
         """
         return self.get(key) is not None

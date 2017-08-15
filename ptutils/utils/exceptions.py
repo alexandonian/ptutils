@@ -5,6 +5,9 @@ Global PTutils exception and warning classes.
 """
 
 
+class StepError(Exception):
+    """Exception class to raise if step is not incremented."""
+
 class ConfigurationError(Exception):
     """Exception class to raise if a Configurable object has an issue."""
 

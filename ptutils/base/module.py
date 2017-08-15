@@ -57,8 +57,15 @@ from collections import OrderedDict
 
 import torch
 
-class NullModule(torch.nn.Module):
-    pass
+
+class NullModule(object):
+    def __init__(self, *args, **kwargs):
+        self._name = kwargs.get('name', self.__class__.__name__.lower())
+
+class NullTorchModule(torch.nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(NullModule, self).__init__()
+        self._name = kwargs.get('name', self.__class__.__name__.lower())
 
 
 class Module(object):

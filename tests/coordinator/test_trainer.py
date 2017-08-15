@@ -16,6 +16,7 @@ class TestTrainer(unittest.TestCase):
         cls.log = logging.getLogger(':'.join([__name__, cls.__name__]))
         cls.log.setLevel('DEBUG')
         cls.test_class = Trainer
+        cls.
 
     @classmethod
     def tearDownClass(cls):
