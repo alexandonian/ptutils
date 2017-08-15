@@ -139,7 +139,6 @@ class MongoQuery(object):
     @classmethod
     def translate(self, collection, query):
         """Translate given datastore `query` to a mongodb query on `collection`."""
-
         # must call find
         mongo_cursor = collection.find(self.filters(query.filters))
 

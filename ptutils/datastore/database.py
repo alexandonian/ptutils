@@ -83,6 +83,7 @@ class MongoInterface(DBInterface):
 
     def save(self, document):
         """Store a dictionary or list of dictionaries as as a document in collection.
+
         The collection is specified in the initialization of the object.
 
         Note that if the dictionary has an '_id' field, and a document in the
@@ -237,8 +238,7 @@ class MongoInterface(DBInterface):
         return Binary(pickle.dumps(tensor, protocol=2), subtype=128)
 
     def _binary_to_tensor(self, binary):
-        """Utility method to turn a a pickled tensor string back into
-        a tensor.
+        """Convert a pickled tensor string back into a tensor.
 
         Called by load_tensors.
 
@@ -247,6 +247,7 @@ class MongoInterface(DBInterface):
 
         Returns:
             Tensor of arbitrary dimension.
+
         """
         return pickle.loads(binary)
 
@@ -269,7 +270,9 @@ class MongoInterface(DBInterface):
         return self._replace(document, replace='__', replacement='.')
 
     def _load_tensor(self, document):
-        """Utility method to recurse through a document and gather all ObjectIds and
+        """Replace ObjectIds with their corresponding gridFS data.
+
+        Utility method to recurse through a document and gather all ObjectIds and
         replace them one by one with their corresponding data from the gridFS collection.
 
         Skips any entries with a key of '_id'.
@@ -281,6 +284,7 @@ class MongoInterface(DBInterface):
 
         Returns:
             document: dictionary-like document, storable in mongodb.
+
         """
         for (key, value) in document.items():
             if isinstance(value, ObjectId) and key != '_id':
@@ -295,7 +299,9 @@ class MongoInterface(DBInterface):
         return document
 
     def _save_tensors(self, document):
-        """Utility method to recurse through a document and replace all tensors
+        """Replace tensors with a reference to their location in gridFS.
+
+        Utility method to recurse through a document and replace all tensors
         and store them in the gridfs, replacing the actual tensors with references to the
         gridfs path.
 
@@ -308,6 +314,7 @@ class MongoInterface(DBInterface):
 
         Returns:
             document: dictionary like-document, storable in mongodb.
+
         """
         for (key, value) in document.items():
 

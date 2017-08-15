@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+from ptutils.base.module import NullModule as Module
+
 
 class Model(nn.Module):
     __name__ = 'model'
@@ -17,7 +19,7 @@ class Model(nn.Module):
         nn.Module.__init__(self)
 
 
-class MNIST(nn.Module):
+class MNIST(Module):
     __name__ = 'MNIST'
 
     def __init__(self,):

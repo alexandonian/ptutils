@@ -1,4 +1,4 @@
-"""Estimator.
+"""Model.
 
 Encapsulates a neural network model, criterion and optimizer.
 """
@@ -6,13 +6,13 @@ import torch
 from torch.autograd import Variable
 from torch.nn.parallel import data_parallel
 
-from ptutils.base.module import Module
+from ptutils.base.module import NullModule as Module
 
 
-class Estimator(Module):
+class Model(Module):
 
     def __init__(self, *args, **kwargs):
-        super(Estimator, self).__init__(*args, **kwargs)
+        super(Model, self).__init__(*args, **kwargs)
 
         # Core
         self._model = None
@@ -45,7 +45,7 @@ class Estimator(Module):
 
         self._loss = None
 
-    def forward(self, input):
+    def output(self, input):
         input_var = Variable(input)
         if self._devices is not None:
             return data_parallel(self.model, input_var, list(self._devices))
@@ -74,8 +74,8 @@ class Estimator(Module):
         self.apply_gradients()
         self.optimizer.zero_grad()
 
-    def step(self, input, target):
-        output = self.forward(input)
+    def forward(self, input, target):
+        output = self.output(input)
         self._loss = self.loss(output, target)
         self.optimize(self._loss)
 

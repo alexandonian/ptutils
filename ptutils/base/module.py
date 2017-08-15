@@ -55,10 +55,9 @@ import pprint
 import warnings
 from collections import OrderedDict
 
-import torch.nn as nn
-from torch.autograd import Variable
+import torch
 
-class NullModule(object):
+class NullModule(torch.nn.Module):
     pass
 
 

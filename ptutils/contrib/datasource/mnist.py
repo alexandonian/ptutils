@@ -5,10 +5,11 @@ Primitive MNIST Dataset and DataProvider classes.
 """
 
 import torchvision.datasets as dsets
+import torchvision.transforms as transforms
 
-from data import Dataset
-from data import DataLoader
-from data import DataProvider
+from ptutils.datasource import Dataset
+from ptutils.datasource import DataLoader
+from ptutils.datasource import DataProvider
 
 
 class MNISTProvider(DataProvider):

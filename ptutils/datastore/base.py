@@ -84,6 +84,7 @@ class Datastore(object):
 
         Returns:
             boolean whether the object exists
+
         """
         return self.get(key) is not None
 
@@ -166,20 +167,6 @@ class DictDatastore(Datastore):
             if len(self._collection(key)) == 0:
                 del self._items[key]
 
-    def contains(self, key):
-        """Return whether the object named by `key` exists.
-
-        Checks for the object in the collection corresponding to `key`.
-
-        Args:
-            key: Key naming the object to check.key
-
-        Returns:
-            boolean: whether the object exists
-
-        """
-        return key in self._collection(key)
-
     def query(self, query):
         """Return an iterable of objects matching criteria expressed in `query`.
 
@@ -194,3 +181,17 @@ class DictDatastore(Datastore):
             return query(self._items[query].values())
         else:
             return query([])
+
+    def contains(self, key):
+        """Return whether the object named by `key` exists.
+
+        Checks for the object in the collection corresponding to `key`.
+
+        Args:
+            key: Key naming the object to check.key
+
+        Returns:
+            boolean: whether the object exists
+
+        """
+        return key in self._collection(key)

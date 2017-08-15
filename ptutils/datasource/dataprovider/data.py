@@ -6,7 +6,7 @@ import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset as dset
 
-from dataloader import DataLoader
+from ptutils.datasource.dataloader import DataLoader
 from ptutils.base.module import Module
 
 

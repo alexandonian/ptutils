@@ -7,8 +7,8 @@ Primitive CIFAR Dataset and DataProvider classes.
 import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 
-from data import DataLoader
-from data import DataProvider
+from datasource import DataLoader
+from datasource import DataProvider
 
 
 class CIFARProvider(DataProvider):

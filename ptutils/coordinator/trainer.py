@@ -1,25 +1,25 @@
 """Trainer.
 
-A coordinator that trains estimators.
+A coordinator that trains one or several Models.
+
 """
 
-from estimator import Estimator
+from ptutils.model import Model
 from coordinator import Coordinator
 
 
 class Trainer(Coordinator):
 
-    def __init__(self, datastore=None, estimator=None, provider=None, **kwargs):
+    def __init__(self, model=None, datastore=None, datasource=None, **kwargs):
         super(Trainer, self).__init__(self,
+                                      model=None,
                                       datastore=None,
-                                      estimator=None,
-                                      provider=None,
-                                      **kwargs)
+                                      datasource=None)
 
         # Core
-        self._provider = None
-        self._estimator = None
+        self._model = None
         self._datastore = None
+        self._datasource= None
 
         self.test_step = None
         self.train_step = None
@@ -37,7 +37,7 @@ class Trainer(Coordinator):
 
     def step(self, input, target):
 
-        self.estimator.step(input, target)
+        self.model(input, target)
         self._step_count += 1
         print('step: {}; loss: {}'.format(self._step_count,
                                           self.estimator._loss.data[0]))
@@ -47,5 +47,13 @@ class Trainer(Coordinator):
             self.step(input, target)
 
     def run(self):
-        dataloader = self.provider.provide()
+        input = self.provider.provide()
         self.loop(dataloader)
+
+    @property
+    def model(self):
+        return self._model
+
+    @property
+    def datasource(self):
+        return self._datasource

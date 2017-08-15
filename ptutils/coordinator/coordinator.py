@@ -1,6 +1,6 @@
 """Coordinator.
 
-Coordinates and records interactions between objects.
+Coordinates and records interactions between ptutils objects.
 """
 from ptutils.base.module import NullModule as Module
 
@@ -14,10 +14,8 @@ class Coordinator(Module):
         self._datastore = None
 
         # Iteration and epoch book-keeping
-        # Replace with estimator_state mod
-        self._step_count = 0
-        self._epoch_count = 0
-        self._batch_count = 0
+        # Replace with Coordinator_ state mod
+        self._step = 0
 
     def step(self):
         pass
@@ -27,3 +25,7 @@ class Coordinator(Module):
 
     def run(self):
         pass
+
+    @property
+    def datastore(self):
+        return self._datastore
