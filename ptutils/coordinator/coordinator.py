@@ -14,7 +14,7 @@ class Coordinator(Base):
 
         # Core
         self._global_step = 0
-        self._datastore = None
+        # self._datastore = None
 
         # Iteration and epoch book-keeping
         # Replace with Coordinator_ state mod
@@ -30,7 +30,6 @@ class Coordinator(Base):
 
     @property
     def datastore(self):
-        return self._datastore
         return self._bases['datastore']
 
     @datastore.setter

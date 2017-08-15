@@ -31,6 +31,7 @@ class MNISTTrainer(Trainer):
         super(MNISTTrainer, self).step(input, target)
         self.datastore.save({'step': self.global_step,
                              'loss': self.model._loss.data[0]})
+        print(trainer.to_params())
 
 
 trainer = MNISTTrainer()

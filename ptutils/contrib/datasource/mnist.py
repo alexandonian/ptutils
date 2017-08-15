@@ -34,3 +34,8 @@ class MNIST(dsets.MNIST, Dataset):
         Dataset.__init__(self)
         super(MNIST, self).__init__(root, train, transform,
                                     target_transform, download)
+
+    def to_params(self):
+        return {name: param for name, param in self._params.items()
+                if name not in ['train_data', 'train_labels',
+                                'test_data', 'test_labels']}

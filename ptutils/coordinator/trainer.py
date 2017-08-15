@@ -17,9 +17,9 @@ class Trainer(Coordinator):
                                       **kwargs)
 
         # Core
-        self._model = None
-        self._datastore = None
-        self._datasource = None
+        # self._model = None
+        # self._datastore = None
+        # self._datasource = None
 
         self.test_step = None
         self.train_step = None
