@@ -20,7 +20,7 @@ class Model(Base):
         # self._optimizer = None
 
         # GPU and dtype business
-        # Replace with model_spec mod
+        # This should go in the params 'specification (spec)'
         self._dtype = 'float'
         self._devices = None
         self._use_cuda = torch.cuda.is_available()
@@ -58,12 +58,12 @@ class Model(Base):
         return loss
 
     def compute_gradients(self, loss=None):
+        loss.backward()
         # loss = self._state.get('loss') if loss is None else loss
         # if self.optimizer is not None:
             # self.optimizer.compute_gradients(loss)
         # else:
             # loss.backward()
-        loss.backward()
 
     def apply_gradients(self):
         # self.optimizer.apply_gradients()

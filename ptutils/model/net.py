@@ -56,8 +56,6 @@ class MNIST(Net):
             nn.MaxPool2d(2))
         self.fc = nn.Linear(7 * 7 * 32, 10)
 
-        self.learning_rate = 0.001
-
     def forward(self, x):
         out = self.layer1(x)
         out = self.layer2(out)

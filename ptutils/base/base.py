@@ -62,7 +62,7 @@ class Base(object):
                     return key.from_params(value)
             elif isinstance(value, collections.Mapping):
                 params[key] = cls.from_params(value)
-        params['_params'] = copy.copy(params)
+        # params['_params'] = copy.copy(params)
         return cls(**params)
 
     def __setattr__(self, name, value):
@@ -139,6 +139,7 @@ if __name__ == '__main__':
     Datasource = type('Datasource', (Base,), {})
     Dataset = type('Dataset', (Base,), {})
 
+    # PARAMS FORMAT 1: attr_name: (sub_base_class, sub_base_params)
     trainer_params = {
         'name': 'mnist_trainer',
         'base': (
@@ -153,6 +154,7 @@ if __name__ == '__main__':
             {'my_dataset': (
                 Dataset, {'name': 'MNIST'})})}
 
+    # PARAMS FORMAT 2: attr_name: {sub_base_class: {sub_base_params}}
     params = {
         'name': 'mnist_trainer',
         'base': {Base: {
@@ -165,12 +167,13 @@ if __name__ == '__main__':
                           'name': 'mnist_dataset'},
                           'another': 'test'}}
 
-
+    {'func': Model,
+    ''}
     trainer = Base.from_params(params)
     print(trainer)
     print(trainer.to_params())
 
     # print(Base(trainer))
 
-    # trainer = Base.from_params_tuple(**trainer_params)
-    # print(trainer)
+    trainer_tuple = Base.from_params_tuple(**trainer_params)
+    print(trainer_tuple)
