@@ -21,19 +21,19 @@ class Trainer(Coordinator):
         # self._datastore = None
         # self._datasource = None
 
-        self.test_step = None
-        self.train_step = None
-        self.predict_step = None
+        # self.test_step = None
+        # self.train_step = None
+        # self.predict_step = None
 
-        self.test_loop = None
-        self.train_loop = None
-        self.predict_loop = None
+        # self.test_loop = None
+        # self.train_loop = None
+        # self.predict_loop = None
 
         # Iteration and epoch book-keeping
         # Replace with estimator_state mod
         # self._global_step = 0
-        self._epoch_count = 0
-        self._batch_count = 0
+        # self._epoch_count = 0
+        # self._batch_count = 0
 
     def step(self, input, target):
         super(Trainer, self).step()

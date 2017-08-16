@@ -2,7 +2,8 @@ import torch.nn as nn
 import torch.optim as optim
 
 from ptutils.model import Model
-from ptutils.net.layers.layers import MNIST
+from ptutils.model.net import MNIST
+# from ptutils.net.layers.layers import MNIST
 from ptutils.contrib.datasource import mnist
 from ptutils.datastore import MongoDatastore
 from ptutils.model.optimizer import Optimizer

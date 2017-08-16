@@ -19,7 +19,7 @@ from ptutils.base import Base
 #         nn.Module.__init__(self)
 
 
-class MNIST(nn.Module, Base):
+class MNIST(nn.Module):
     __name__ = 'MNIST'
 
     def __init__(self,):

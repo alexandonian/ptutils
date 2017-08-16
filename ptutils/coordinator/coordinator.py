@@ -13,11 +13,9 @@ class Coordinator(Base):
         super(Coordinator, self).__init__(*args, **kwargs)
 
         # Core
+        self._exp_id = None
         self._global_step = 0
         # self._datastore = None
-
-        # Iteration and epoch book-keeping
-        # Replace with Coordinator_ state mod
 
     def step(self):
         self.global_step += 1
@@ -35,6 +33,14 @@ class Coordinator(Base):
     @datastore.setter
     def datastore(self, value):
         self._bases['datastore'] = value
+
+    @property
+    def exp_id(self):
+        return self._exp_id
+
+    @exp_id.setter
+    def exp_id(self, value):
+        self._exp_id = value
 
     @property
     def global_step(self):

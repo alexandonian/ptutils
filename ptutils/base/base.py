@@ -1,8 +1,13 @@
 from __future__ import print_function
 
 import copy
-from pprint import pprint as print
+import logging
 import collections
+from pprint import pprint as print
+
+logging.basicConfig()
+log = logging.getLogger(__name__)
+log.setLevel('DEBUG')
 
 
 class Base(object):
@@ -39,7 +44,14 @@ class Base(object):
             if param is not None:
                 params[name] = param
         for name, base in self._bases.items():
-            params[name] = base.to_params()
+            try:
+                params[name] = base.to_params()
+            except AttributeError as error:
+                log.warning(error)
+                try:
+                    params[name] = base.state_dict().keys()
+                except AttributeError as error:
+                    log.warning(error)
         return params
 
     @classmethod
@@ -56,7 +68,7 @@ class Base(object):
     def __setattr__(self, name, value):
         if isinstance(value, Base):
             self._bases[name] = value
-        # else:
+        else:
             if not name.startswith('_'):
                 self._params[name] = value
         object.__setattr__(self, name, value)
@@ -150,20 +162,12 @@ if __name__ == '__main__':
         'my_datastore': {Datastore: {}},
         'my_datasource': {Datasource: {
                           'my_dataset': {Dataset: {}},
-                          'name': 'poop'},
-                          'another': 'damn'}}
+                          'name': 'mnist_dataset'},
+                          'another': 'test'}}
 
-    # params = collections.OrderedDict()
-
-    # params['name'] = 'mnist_trainer'
-    # params['base'] = {Base: {'name': 'test'}},
-    # params['my_model'] = {Model: {'model_test': 'test'}},
-    # params['my_datastore'] = {Datastore: {}}
-    # params['my_datasource'] = {Datasource: {'my_dataset': {Dataset: {}}, 'name': 'poop'},
-    #                       'another': 'damn'}
 
     trainer = Base.from_params(params)
-    # print(trainer)
+    print(trainer)
     print(trainer.to_params())
 
     # print(Base(trainer))

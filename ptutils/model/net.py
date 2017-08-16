@@ -8,22 +8,30 @@ class Net(nn.Module, Base):
     def __init__(self, *args, **kwargs):
         super(Net, self).__init__()
         Base.__init__(self, *args, **kwargs)
-        # for arg in args:
-            # if isinstance(arg, nn.Module):
+        for arg in args:
+            if isinstance(arg, nn.Module):
                 # self.__setattr__(type(arg), arg)
-                # self = arg
+                self = arg
 
-    def to_params(self):
-        params = {}
-        for name, value in self.__dict__.items():
-        # for name, value in self._params.items():
-            if not name.startswith('_'):
-                params[name] = value
-        for name, mod in self._modules.items():
-            print(name)
-            net = Net(mod)
-            params[name] = net.to_params()
-        return params
+    # def to_params(self):
+    #     params = {}
+    #     for name, value in self.__dict__.items():
+    #         if not name.startswith('_'):
+    #             params[name] = value
+    #     # for name, mod in self._modules.items():
+    #     try:
+    #         for name, mod in self.modules():
+    #             net = Net(mod)
+    #             params[name] = net.to_params()
+    #     except Exception as e:
+    #         print(e)
+    #     try:
+    #         for name, mod in self.children():
+    #             net = Net(mod)
+    #             params[name] = net.to_params()
+    #     except Exception as e:
+    #         print(e)
+    #     return params
 
     def __setattr__(self, name, value):
         if isinstance(value, nn.Module):
@@ -58,7 +66,7 @@ class MNIST(Net):
         return out
 
 
-m = MNIST()
-conv = m.layer1[0]
-cn = Net(conv)
-print(cn.to_params())
+# m = MNIST()
+# conv = m.layer1[0]
+# cn = Net(conv)
+# print(cn.to_params())

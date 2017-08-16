@@ -54,7 +54,7 @@ class Model(Base):
 
     def loss(self, output, target):
         target_var = Variable(target)
-        loss = self._criterion(output, target_var)
+        loss = self.criterion(output, target_var)
         return loss
 
     def compute_gradients(self, loss=None):
